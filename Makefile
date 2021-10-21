@@ -4,15 +4,16 @@ SRC_DIR = src
 OBJ_DIR = obj
 INC_DIR = inc
 
-PATH=E:\masm64\
+PATH=\masm64
 
 vpath %.asm SRC_DIR
 vpath %.inc INC_DIR
 vpath %.obj OBJ_DIR
 
-CFLAGS = /c /Cp /I $(PATH)include
-LDFLAGS = /SUBSYSTEM:WINDOWS /ENTRY:DllMain /DLL /section:.bss
-LDLIBS = /LIBPATH:$(PATH)lib
+CFLAGS = /c /Cp /I $(PATH)\include
+LDFLAGS = /SUBSYSTEM:WINDOWS /ENTRY:DllMain /DLL /ALIGN:16 \
+	  /DEF:$(TARGET).def
+LDLIBS = /LIBPATH:$(PATH)\lib
 
 CC=E:\masm64\bin\ml64.exe
 LNK=E:\masm64\bin\link.exe
@@ -20,14 +21,15 @@ LNK=E:\masm64\bin\link.exe
 SOURCES = $(wildcard $(SRC_DIR)/*.asm)
 OBJECTS = $(subst $(SRC_DIR)/,$(OBJ_DIR)/,$(SOURCES:.asm=.obj))
 
-%.obj: src/%.asm
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(OBJ_DIR)/%.obj: $(SRC_DIR)/%.asm
+	$(CC) $(CFLAGS) /Fo $@ $<
 
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(LNK) $(LDFLAGS) -o $@ $^
+	$(LNK) $(LDFLAGS) $(LDLIBS) $^
 
 clean:
-	del $(OBJ_DIR)\*.obj
-	del $(TARGET).dll
+	@Echo Off
+	del *.lib *.exp $(TARGET).dll $(OBJ_DIR)\*.obj
+	@Echo On
