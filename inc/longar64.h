@@ -1,0 +1,1 @@
+void DllMonitor(char *msg);
