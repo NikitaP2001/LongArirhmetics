@@ -1,0 +1,7 @@
+IFNDEF main
+DEBUG EQU DEBUG
+
+
+
+ENDIF
+
