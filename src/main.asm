@@ -1,9 +1,11 @@
 include user32.inc
 include msvcrt.inc
 include kernel32.inc
+include ntdll.inc
 includelib user32.lib
 includelib msvcrt.lib
 includelib kernel32.lib
+includelib ntdll.lib
 
 include main.inc
 include longops.inc
@@ -17,7 +19,6 @@ DllHeapHandle	QWORD	0
 
 MsgAttach db "The DLL is loaded", 0 
 MsgDetach db "The DLL is unloaded", 0
-HeapAllocError db 8, "[-]Error allocating heap", 0
 
 .code
 DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
@@ -26,6 +27,7 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 	cmp edx, DLL_PROCESS_ATTACH
 	jne @elseif
 	
+		;initilize heap
 		xor rcx, rcx
 		xor rdx, rdx
 		xor r8, r8
@@ -33,14 +35,26 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 		test eax, eax
 		jne @F
 		
-		lea ecx, HeapAllocError
-		call DllMonitor
-		
 		or ecx, 1
 		call ExitProcess
 		jmp @endif
 @@:	
 		mov DllHeapHandle, rax
+		
+		;initilize vals array
+		mov (VALSET PTR global_set).val_count, 20
+		mov rcx, DllHeapHandle
+		mov rdx, 8
+		mov r8, 20 * 8
+		call HeapAlloc
+		test rax, rax
+		jne @F
+		
+		or ecx, 1
+		call ExitProcess
+		jmp @endif
+@@:	
+		mov (VALSET PTR global_set).val_array, rax
 	
 		mov rcx, OFFSET MsgAttach
 		call DllMonitor

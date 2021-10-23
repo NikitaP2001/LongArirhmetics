@@ -1,11 +1,12 @@
 IFNDEF longops
 longops EQU longops
 
+VAL_DEFAULT_SIZE EQU 10
 lplongval TYPEDEF PTR longval
 longval STRUCT 
 	val_size 	QWORD		0
-	val_ptr		BYTE PTR 	0
-	val_sign	DWORD		0
+	val_ptr		QWORD 		0
+	val_sign	QWORD		0
 	descriptor	QWORD		0
 longval ENDS
 

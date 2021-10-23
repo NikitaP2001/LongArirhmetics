@@ -2,33 +2,27 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include "windows.h"
 
-struct longval op1 = {
-	.val_size = 6,
-	.val_ptr = "\x12\x34\x56\x67\x78\xFF",
-};
-
-struct longval op2= {
-	.val_size = 6,
-	.val_ptr = "\x00\x00\x00\x11\x11\x10",
-};
+uint64_t numbers[100];
 
 int main(void)
-{
-	op1.val_ptr[0] = '\x12';
-	op2.val_ptr[0]= '\x00';
-	char *ptr = malloc(30);
-	strcpy(ptr, "Hello from program");
-	DllMonitor(ptr);
+{	
+	clock_t timer;
+	int ac = 0, fc = 0;
 	
-	if (LongValUnsignedAdd(&op1, &op2) == 0)
-		puts("\t[-] Addition error");
+	timer = clock();
+	for (int j = 0; j < 1000000; j++) {
+		for (int i = 0; (numbers[i] = AllocLongVal()) && i < 100; i++)
+			ac++;
+		
+		for (int i = 0; (numbers[i] = FreeLongVal(numbers[i])) && i < 100; i++)
+			fc++;
+	}
+	timer -= clock();
 	
-	puts("\t[+] Addition completed");
-	puts("op1:");
-	DumpLongVal(&op1);
-	puts("op2:");
-	DumpLongVal(&op2);
+	float dt = (float)timer;
+	printf("Got %d Allocations and %d Deallocation in %f ms\n", ac, fc, dt);
 	
 }

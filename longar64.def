@@ -3,4 +3,6 @@ EXPORTS DllMain
 DllMonitor
 DumpLongVal
 LongValUnsignedAdd
+AllocLongVal
+FreeLongVal
 

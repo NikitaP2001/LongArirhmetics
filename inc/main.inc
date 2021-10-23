@@ -1,7 +1,8 @@
 IFNDEF main
 DEBUG EQU DEBUG
 
-
+HeapAlloc TEXTEQU RtlAllocateHeap
+EXTERNDEF DllHeapHandle:QWORD
 
 ENDIF
 
