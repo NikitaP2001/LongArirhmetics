@@ -1,14 +1,28 @@
 IFNDEF longops
 longops EQU longops
 
+lplongval TYPEDEF PTR longval
 longval STRUCT 
 	val_size 	QWORD		0
-	val_ptr		QWORD PTR 	0
+	val_ptr		BYTE PTR 	0
 	val_sign	DWORD		0
+	descriptor	QWORD		0
 longval ENDS
 
-LongValAdd PROTO val1:PTR longval, val2: PTR longval
+VALSET STRUCT
+	val_count	QWORD	0
+	val_array	lplongval 0
+VALSET ENDS
 
-LongValSub PROTO val1:PTR longval, val2: PTR longval
+EXTERNDEF global_set:VALSET
+
+LongValUnsignedAdd PROTO op1:PTR longval, op2: PTR longval
+
+LongValSub PROTO op1:PTR longval, op2: PTR longval
+
+LongValToStdString PROTO target:PTR BYTE, source: PTR longval
+
+AllocLongVal	PROTO	
+FreeLongVal		PROTO	descriptor:QWORD
 
 ENDIF
