@@ -17,9 +17,6 @@ MB_OK EQU 0
 .data
 DllHeapHandle	QWORD	0
 
-MsgAttach db "The DLL is loaded", 0 
-MsgDetach db "The DLL is unloaded", 0
-
 .code
 DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 	sub rsp, 20h
@@ -42,10 +39,10 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 		mov DllHeapHandle, rax
 		
 		;initilize vals array
-		mov (VALSET PTR global_set).val_count, 20
+		mov (VALSET PTR global_set).val_count, 1
 		mov rcx, DllHeapHandle
 		mov rdx, 8
-		mov r8, 20 * 8
+		mov r8, 1 * 8
 		call HeapAlloc
 		test rax, rax
 		jne @F
@@ -56,8 +53,6 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 @@:	
 		mov (VALSET PTR global_set).val_array, rax
 	
-		mov rcx, OFFSET MsgAttach
-		call DllMonitor
 	jmp @endif
 @elseif:	
 	cmp edx, DLL_PROCESS_DETACH
@@ -68,9 +63,7 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 @@:
 		mov rcx, DllHeapHandle
 		call HeapDestroy
-	
-		mov rcx, OFFSET MsgDetach
-		call DllMonitor
+		
 @endif:
 
 	mov eax, 1
@@ -81,34 +74,8 @@ DllMain endp
 ;	function needed in debug purposes
 IFDEF DEBUG
 
-DllMonitor proc msg:PTR BYTE
-	LOCAL 	hConsole:QWORD,
-			msg_len:DWORD
-	sub rsp, 28h
-	mov msg, rcx
-	
-	mov ecx, -11
-	call GetStdHandle
-	mov hConsole, rax
-	
-	mov rcx, msg
-	call crt_strlen
-	mov msg_len, eax
-	
-	mov rcx, hConsole
-	mov rdx, msg
-	mov r8d, msg_len
-	xor r9, r9
-	mov dword ptr[rsp+20], 0
-	call WriteConsoleA
-	
-	mov ecx, 10
-	call crt_putchar
-	
-	mov eax, 1
-	add rsp, 28h
-	ret
-DllMonitor endp
+.data
+sizepat db "Set size: %llu", 10, 0
 
 .data
 dump_pat	db	"%0#2x ", 0

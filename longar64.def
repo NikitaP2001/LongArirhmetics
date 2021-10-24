@@ -1,6 +1,5 @@
 LIBRARY longar64
 EXPORTS DllMain
-DllMonitor
 DumpLongVal
 LongValUnsignedAdd
 AllocLongVal

@@ -75,8 +75,8 @@ LongValUnsignedAdd proc op1:PTR longval, op2: PTR longval
 @Error:
 	mov eax, 0
 	
-@@:
-
+@@:	
+	
 	pop r12
 	pop r11
 	pop rdi
@@ -90,7 +90,7 @@ AllocLongVal proc
 ;	descriptor:QWORD
 ;-----------------------------
 	push rdi
-	sub rsp, 20h
+	sub rsp, 28h
 
 	mov rcx, (VALSET PTR global_set).val_count
 	mov rdi, (VALSET PTR global_set).val_array
@@ -106,9 +106,20 @@ AllocLongVal proc
 	inc rdx
 	jmp @B
 @@:
-	;make array bigger
-	;not now
-	jmp @Error
+	mov r9, rcx
+	inc r9
+	shl r9, 3
+	mov rcx, DllHeapHandle
+	mov rdx, 8
+	mov r8, (VALSET PTR global_set).val_array
+	call HeapReAlloc
+	test rax, rax
+	je @Error
+	mov (VALSET PTR global_set).val_array, rax
+	inc (VALSET PTR global_set).val_count
+	
+	mov rcx, (VALSET PTR global_set).val_count
+	lea rdi, [rax + rcx * 8 - 8]
 	
 @Found:
 	;alloc longval
@@ -136,7 +147,7 @@ AllocLongVal proc
 	xor rax, rax
 @Exit:
 
-	add rsp, 20h
+	add rsp, 28h
 	pop rdi
 	ret
 AllocLongVal endp
@@ -144,7 +155,7 @@ AllocLongVal endp
 FreeLongVal	proc descriptor:QWORD
 	push rbx
 	push rdi
-	sub rsp, 20h
+	sub rsp, 28h
 	
 	mov rbx, (VALSET PTR global_set).val_count
 	mov rdi, (VALSET PTR global_set).val_array
@@ -184,7 +195,30 @@ FreeLongVal	proc descriptor:QWORD
 	test rax, rax
 	je @Error
 	
-	mov qword ptr[rdi], 0
+	;move last
+	mov rcx, (VALSET PTR global_set).val_count
+	mov rdx, (VALSET PTR global_set).val_array
+	lea rdx, [rdx + rcx * 8 - 8]
+	mov rdx, qword ptr [rdx]
+	mov qword ptr [rdi], rdx
+	
+	;realloc array
+	cmp rcx, 1
+	jbe @F
+	
+	mov r9, rcx
+	dec r9
+	shl r9, 3
+	mov rcx, DllHeapHandle
+	mov rdx, 8
+	mov r8, (VALSET PTR global_set).val_array
+	call HeapReAlloc
+	test rax, rax
+	je @Error
+	mov (VALSET PTR global_set).val_array, rax
+	dec (VALSET PTR global_set).val_count
+	
+@@:
 	mov rax, rbx
 	jmp @Exit
 
@@ -193,7 +227,7 @@ FreeLongVal	proc descriptor:QWORD
 
 @Exit:
 
-	add rsp, 20h
+	add rsp, 28h
 	pop rdi
 	pop rbx
 	ret
