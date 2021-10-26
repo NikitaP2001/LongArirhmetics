@@ -26,4 +26,6 @@ LongValToStdString PROTO target:PTR BYTE, source: PTR longval
 AllocLongVal	PROTO	
 FreeLongVal		PROTO	descriptor:QWORD
 
+GetLongvalPtr PROTO desc:QWORD
+
 ENDIF

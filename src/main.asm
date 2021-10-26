@@ -81,11 +81,13 @@ sizepat db "Set size: %llu", 10, 0
 dump_pat	db	"%0#2x ", 0
 error_print db "DumpLongVal: invalid longval struct"
 .code
-DumpLongVal proc val:PTR longval
+DumpLongVal proc desc:QWORD
 	push rbx
 	push rsi
 	sub rsp, 18h
-	mov val, rcx
+	
+	call GetLongvalPtr
+	mov rcx, rax
 	
 	mov rbx, (longval PTR [rcx]).val_size
 	;case zero size

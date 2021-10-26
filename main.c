@@ -7,6 +7,7 @@
 
 uint64_t numbers[100];
 
+
 int main(void)
 {	
 	clock_t timer;
@@ -16,17 +17,29 @@ int main(void)
 	for (int j = 0; j < 10; j++) {
 		for (int i = 0; (numbers[i] = AllocLongVal()) && i < 100; i++) {
 			ac++;
-			SetSize();
+			printf("%d - th allocated\n", i);
 		}
 		
 		for (int i = 0; (numbers[i] = FreeLongVal(numbers[i])) && i < 100; i++) {
 			fc++;
-			SetSize();
+			printf("%d - th deallocated\n", i);
 		}
 	}
 	timer = clock() - timer;
-	
+	/* 
 	float dt = (float)timer;
-	printf("Got %d Allocations and %d Deallocation in %.0f ms\n", ac, fc, dt);
+	printf("got %d allocations and %d deallocation in %.0f ms\n", ac, fc, dt);
+	
+	uint64_t val1 = AllocLongVal();
+	uint64_t val2 = AllocLongVal();
+	
+	puts("val1:");
+	DumpLongVal(val1);
+	
+	puts("val2:");
+	DumpLongVal(val2);
+	
+	FreeLongVal(val1);
+	FreeLongVal(val2); */
 	
 }

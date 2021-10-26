@@ -105,6 +105,7 @@ AllocLongVal proc
 	add rdi, SIZEOF QWORD
 	inc rdx
 	jmp @B
+	
 @@:
 	mov r9, rcx
 	inc r9
@@ -232,5 +233,38 @@ FreeLongVal	proc descriptor:QWORD
 	pop rbx
 	ret
 FreeLongVal endp
+
+GetLongvalPtr proc desc:QWORD
+
+	mov rbx, (VALSET PTR global_set).val_count
+	mov rdi, (VALSET PTR global_set).val_array
+	xor rdx, rdx
+@@:
+	cmp rdx, rbx
+	je @Error
+
+	cmp qword ptr[rdi], 0
+	je @Skip
+	
+	mov r8, qword ptr [rdi]
+	cmp (longval PTR [r8]).descriptor, rcx
+	je @Found
+	
+@Skip:
+	add rdi, SIZEOF QWORD
+	inc rdx
+	jmp @B
+
+@Found:
+	mov rax, r8
+	jmp @Ret
+	
+@Error:
+	xor rax, rax
+	
+@Ret:
+
+	ret
+GetLongvalPtr endp
 
 END
