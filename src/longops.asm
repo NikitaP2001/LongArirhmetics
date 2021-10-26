@@ -267,4 +267,106 @@ GetLongvalPtr proc desc:QWORD
 	ret
 GetLongvalPtr endp
 
+IntToLongVal proc ival:DWORD, desc:QWORD
+	push r10
+	push rdi
+	sub rsp, 28h
+	mov ival, ecx
+	mov desc, rdx
+
+	;Descriptor to longval ptr
+	mov rcx, rdx
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov rdi, rax
+	
+	;store int's sign to longval
+	mov (longval PTR [rdi]).val_sign, 0
+	mov ecx, ival
+	test ecx, ecx
+	jns @F
+	neg ival
+	mov (longval PTR [rdi]).val_sign, 1
+	
+@@:
+	mov r10, 4
+	mov eax, ival
+	rol eax, 8
+	
+@@:	;Calculate length
+	test al, al
+	jnz @F
+	
+	cmp r10, 1
+	jz @F
+	
+	dec r10
+	rol eax, 8
+	jmp @B
+
+@@:	;Change array size
+	mov rdx, r10
+	mov rcx, desc
+	call ReallocLongVal
+	
+	;Store int in array
+	mov rcx, (longval PTR [rdi]).val_ptr
+	mov eax, ival
+@@:	
+	mov byte ptr[rcx], al
+	shr rax, 8
+	inc rcx
+	dec r10
+	jne @B
+	
+	or rax, 1	
+	jmp @F
+	
+@Error:
+	xor rax, rax
+	
+@@:
+	add rsp, 28h
+	pop rdi
+	pop r10
+	ret
+IntToLongVal endp
+
+ReallocLongVal proc desc:QWORD, new_size:QWORD
+	push rdi
+	push r10
+	sub rsp, 28h
+	mov new_size, rdx
+	
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov rdi, rax
+	
+	mov rdx, new_size
+	cmp rdx, 7FFF8h
+	ja @Error
+
+	mov (longval PTR [rdi]).val_size, rdx
+	mov rcx, DllHeapHandle
+	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
+	mov r8, (longval PTR [rdi]).val_ptr
+	mov r9, rdx
+	call HeapReAlloc
+	test rax, rax
+	je @Error
+	
+	or rax, 1
+	jmp @F
+	
+@Error:
+	xor rax, rax
+@@:
+	add rsp, 28h
+	pop r10
+	pop rdi
+	ret
+ReallocLongVal endp
+
 END

@@ -32,6 +32,6 @@ FreeLongVal		PROTO	descriptor:QWORD
 
 GetLongvalPtr PROTO desc:QWORD
 
-QWordToLongVal PROTO val:QWORD, desc:QWORD
+IntToLongVal PROTO ival:DWORD, desc:QWORD
 
 ENDIF

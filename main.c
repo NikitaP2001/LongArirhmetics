@@ -20,19 +20,17 @@ int main(void)
 		for (int i = 0; (numbers[i] = FreeLongVal(numbers[i])) && i < 100; i++);
 	}
 	
-	uint64_t val1 = AllocLongVal();
-	uint64_t val2 = AllocLongVal();
+	uint64_t val;
 	
-	puts("val1:");
-	DumpLongVal(val1);
-	
-	puts("val2:");
-	DumpLongVal(val2);
-	
-	LongValUnsignedAdd(val1, val2);
-	
-	FreeLongVal(val1);
-	FreeLongVal(val2);
+	val = AllocLongVal(val);
+	while (1) {
+		int temp;
+		scanf("%d", &temp);
+		IntToLongVal(temp, val);
+		DumpLongVal(val);
+		
+	}
+	FreeLongVal(val);
 	
 	puts("hi");
 	

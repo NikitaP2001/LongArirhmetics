@@ -4,4 +4,5 @@ DumpLongVal
 LongValUnsignedAdd
 AllocLongVal
 FreeLongVal
+IntToLongVal
 

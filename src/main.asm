@@ -78,34 +78,51 @@ IFDEF DEBUG
 sizepat db "Set size: %llu", 10, 0
 
 .data
-dump_pat	db	"%0#2x ", 0
+dump_pat	db	"%02x ", 0
 error_print db "DumpLongVal: invalid longval struct"
 .code
 DumpLongVal proc desc:QWORD
+	push rdi
 	push rbx
 	push rsi
 	sub rsp, 28h
 	
 	call GetLongvalPtr
-	mov rcx, rax
+	test rax, rax
+	je @Error
 	
-	mov rbx, (longval PTR [rcx]).val_size
+	mov rdi, rax
+	
+	;write sign
+	mov rax, (longval PTR [rdi]).val_sign
+	test rax, rax
+	je @F
+	
+	mov ecx, '-'
+	call crt_putchar
+	
+@@:
+	
+	mov rbx, (longval PTR [rdi]).val_size
 	;case zero size
 	test rbx, rbx
 	je @Error
 	
-	lea rsi, (longval PTR [rcx]).val_ptr
+	lea rsi, (longval PTR [rdi]).val_ptr
 	mov rsi, QWORD PTR [rsi]
 	;case nullptr
 	test rsi, rsi
 	je @Error
+	
+	add rsi, rbx
+	dec rsi
 	
 @@:
 	mov rcx, OFFSET dump_pat
 	movzx rdx, byte ptr[rsi]
 	call crt_printf
 	
-	inc rsi
+	dec rsi
 	dec rbx
 	
 	test rbx, rbx
@@ -124,6 +141,7 @@ DumpLongVal proc desc:QWORD
 	add rsp, 28h
 	pop rsi
 	pop rbx
+	pop rdi
 	ret
 DumpLongVal endp
 
