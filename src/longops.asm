@@ -13,6 +13,14 @@ global_set VALSET <0, 0>
 .code
 
 LongValUnsignedAdd proc op1:PTR longval, op2: PTR longval
+;	Add second operand to first, not change
+;	sign qword
+;	ret: 
+;		not a zero is case of success
+;	Note: This function must not be called 
+;	outside of module
+;--------------------------------------------------------
+
 	push rsi
 	push rdi
 	push r11
@@ -31,36 +39,29 @@ LongValUnsignedAdd proc op1:PTR longval, op2: PTR longval
 	je @Error
 	
 	;read op1 address
-	lea rsi, (longval PTR [rcx]).val_ptr
-	mov rsi, QWORD PTR [rsi]
+	mov rsi, (longval PTR [rcx]).val_ptr
 	;case nullptr
 	test rsi, rsi
 	je @Error
 	
 	;read op2 address
-	lea rdi, (longval PTR [rdx]).val_ptr
-	mov rdi, QWORD PTR [rdi]
+	mov rdi, (longval PTR [rdx]).val_ptr
 	;case nullptr
 	test rdi, rdi
 	je @Error
 	
-	;case different sizes
-	cmp r11, r12
-	jne @Error
-	
-	lea rsi, [rsi + r11 - 1]
-	lea rdi, [rdi + r12 - 1]
-	
+	xor r8, r8
 	clc
 @@:
 	mov al, byte ptr[rdi]
 	adc [rsi], al
 	pushfq
 	
-	dec rdi
-	dec rsi
+	inc rdi
+	inc rsi
+	inc r8
 	
-	dec r11
+	cmp r8, r12
 	je @F
 	
 	popfq
