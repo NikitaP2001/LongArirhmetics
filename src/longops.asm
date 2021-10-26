@@ -111,7 +111,7 @@ AllocLongVal proc
 	inc r9
 	shl r9, 3
 	mov rcx, DllHeapHandle
-	mov rdx, 8
+	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
 	mov r8, (VALSET PTR global_set).val_array
 	call HeapReAlloc
 	test rax, rax
@@ -125,7 +125,7 @@ AllocLongVal proc
 @Found:
 	;alloc longval
 	mov rcx, DllHeapHandle
-	mov rdx, 8
+	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
 	mov r8, SIZEOF longval
 	call HeapAlloc
 	test rax, rax
@@ -135,7 +135,7 @@ AllocLongVal proc
 	
 	mov (longval PTR [rdi]).val_size, VAL_DEFAULT_SIZE
 	mov rcx, DllHeapHandle
-	mov rdx, 8
+	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
 	mov r8, VAL_DEFAULT_SIZE
 	call HeapAlloc
 	je @Error
@@ -204,14 +204,14 @@ FreeLongVal	proc descriptor:QWORD
 	mov qword ptr [rdi], rdx
 	
 	;realloc array
-	cmp rcx, 1
+	cmp rcx, 10
 	jbe @F
 	
 	mov r9, rcx
 	dec r9
 	shl r9, 3
 	mov rcx, DllHeapHandle
-	mov rdx, 8
+	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
 	mov r8, (VALSET PTR global_set).val_array
 	call HeapReAlloc
 	test rax, rax

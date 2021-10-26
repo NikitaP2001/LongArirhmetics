@@ -1,7 +1,11 @@
 IFNDEF longops
 longops EQU longops
 
-VAL_DEFAULT_SIZE EQU 10
+HEAP_GENERATE_EXCEPTIONS EQU 4
+HEAP_ZERO_MEMORY EQU 8
+HEAP_NO_SERIALIZE EQU 1
+
+VAL_DEFAULT_SIZE EQU 1
 lplongval TYPEDEF PTR longval
 longval STRUCT 
 	val_size 	QWORD		0
@@ -27,5 +31,7 @@ AllocLongVal	PROTO
 FreeLongVal		PROTO	descriptor:QWORD
 
 GetLongvalPtr PROTO desc:QWORD
+
+QWordToLongVal PROTO val:QWORD, desc:QWORD
 
 ENDIF
