@@ -84,7 +84,7 @@ error_print db "DumpLongVal: invalid longval struct"
 DumpLongVal proc desc:QWORD
 	push rbx
 	push rsi
-	sub rsp, 18h
+	sub rsp, 28h
 	
 	call GetLongvalPtr
 	mov rcx, rax
@@ -114,14 +114,14 @@ DumpLongVal proc desc:QWORD
 	jmp @B
 
 @Error:
-	lea ecx, error_print
+	lea rcx, error_print
 	call crt_puts
 	
 @@:
 	mov ecx, 10
 	call crt_putchar
 	
-	add rsp, 18h
+	add rsp, 28h
 	pop rsi
 	pop rbx
 	ret

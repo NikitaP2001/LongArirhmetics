@@ -236,23 +236,23 @@ FreeLongVal endp
 
 GetLongvalPtr proc desc:QWORD
 
-	mov rbx, (VALSET PTR global_set).val_count
-	mov rdi, (VALSET PTR global_set).val_array
-	xor rdx, rdx
+	mov rax, (VALSET PTR global_set).val_count
+	mov rdx, (VALSET PTR global_set).val_array
+	xor r9, r9
 @@:
-	cmp rdx, rbx
+	cmp r9, rax
 	je @Error
 
-	cmp qword ptr[rdi], 0
+	cmp qword ptr[rdx], 0
 	je @Skip
 	
-	mov r8, qword ptr [rdi]
+	mov r8, qword ptr [rdx]
 	cmp (longval PTR [r8]).descriptor, rcx
 	je @Found
 	
 @Skip:
-	add rdi, SIZEOF QWORD
-	inc rdx
+	add rdx, SIZEOF QWORD
+	inc r9
 	jmp @B
 
 @Found:
