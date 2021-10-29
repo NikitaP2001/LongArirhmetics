@@ -12,7 +12,7 @@ global_set VALSET <0, 0>
 
 .code
 
-LongValUnsignedAdd proc op1:PTR longval, op2: PTR longval
+LongValUnsignedAdd proc op1:QWORD, op2: QWORD
 ;	Add second operand to first, not change
 ;	sign qword
 ;	ret: 
@@ -20,70 +20,249 @@ LongValUnsignedAdd proc op1:PTR longval, op2: PTR longval
 ;	Note: This function must not be called 
 ;	outside of module
 ;--------------------------------------------------------
-
+	LOCAL BFlags:BYTE
+	
 	push rsi
 	push rdi
 	push r11
 	push r12
+	push r14
+	sub rsp, 30h
+	mov op1, rcx
+	mov op2, rdx
 	
 	;read op1 size
-	mov r11, (longval PTR [rcx]).val_size
+	mov rcx, op1
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov r11, (longval PTR [rax]).val_size
 	;case zero size
 	test r11, r11
 	je @Error
 	
 	;read op2 size
-	mov r12, (longval PTR [rdx]).val_size
+	mov rcx, op2
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov r12, (longval PTR [rax]).val_size
 	;case zero size
 	test r12, r12
 	je @Error
 	
+	xor r14, r14
+	clc
+	lahf
+	mov BFlags, ah
+
 	;read op1 address
-	mov rsi, (longval PTR [rcx]).val_ptr
+	mov rcx, op1
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov rsi, (longval PTR [rax]).val_ptr
 	;case nullptr
 	test rsi, rsi
 	je @Error
 	
 	;read op2 address
-	mov rdi, (longval PTR [rdx]).val_ptr
+	mov rcx, op2
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov rdi, (longval PTR [rax]).val_ptr
 	;case nullptr
 	test rdi, rdi
 	je @Error
 	
-	xor r8, r8
-	clc
-@@:
-	mov al, byte ptr[rdi]
-	adc [rsi], al
-	pushfq
+@do:
+	;check fisrt op for owfl
+	cmp r14, r11
+	jb @if
+	inc r11
+	mov rcx, op1
+	mov rdx, r11
+	call ReallocLongVal
+	test rax, rax
+	je @Error
+	mov rsi, rax
+	;write zero re-ted to memory
+	add rax, r11
+	dec rax
+	mov byte ptr[rax], 0
 	
-	inc rdi
-	inc rsi
-	inc r8
+@if: ;add op2 to op1
+	cmp r14, r12
+	jnb @elseif
+	mov al, byte ptr[rdi + r14]
+	mov ah, BFlags
+	sahf
+	adc byte ptr[rsi + r14], al
+	lahf
+	mov BFlags, ah
+	jmp @endif
 	
-	cmp r8, r12
-	je @F
-	
-	popfq
-	jmp @B
-	
-@@:
-	;check owerflow
-	mov rax, (longval PTR [rcx]).val_size
-	popfq
-	jnc @F
+@elseif: ;in case of end op2
+	mov ah, BFlags
+	sahf
+	adc byte ptr[rsi + r14], 0
+	lahf
+	mov BFlags, ah
 
+@endif:
+
+	inc r14
+	cmp r14, r12
+	jb @do
+	mov ah, BFlags
+	sahf
+	lahf
+	mov BFlags, ah
+	jc @do
+	
+	or rax, 1
+	jmp @F
+	
 @Error:
 	mov eax, 0
 	
 @@:	
 	
+	add rsp, 30h
+	pop r14
 	pop r12
 	pop r11
 	pop rdi
 	pop rsi
 	ret
 LongValUnsignedAdd endp
+
+LongValUnsignedSub proc op1:QWORD, op2: QWORD
+;	Add second operand to first, not change
+;	sign qword
+;	ret: 
+;		not a zero is case of success
+;	Note: This function must not be called 
+;	outside of module
+;--------------------------------------------------------
+	LOCAL BFlags:BYTE
+	
+	push rsi
+	push rdi
+	push r11
+	push r12
+	push r14
+	sub rsp, 30h
+	mov op1, rcx
+	mov op2, rdx
+	
+	;read op1 size
+	mov rcx, op1
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov r11, (longval PTR [rax]).val_size
+	;case zero size
+	test r11, r11
+	je @Error
+	
+	;read op2 size
+	mov rcx, op2
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov r12, (longval PTR [rax]).val_size
+	;case zero size
+	test r12, r12
+	je @Error
+	
+	xor r14, r14
+	clc
+	lahf
+	mov BFlags, ah
+
+	;read op1 address
+	mov rcx, op1
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov rsi, (longval PTR [rax]).val_ptr
+	;case nullptr
+	test rsi, rsi
+	je @Error
+	
+	;read op2 address
+	mov rcx, op2
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov rdi, (longval PTR [rax]).val_ptr
+	;case nullptr
+	test rdi, rdi
+	je @Error
+	
+@do:
+	;check fisrt op for owfl
+	cmp r14, r11
+	jb @if
+	inc r11
+	mov rcx, op1
+	mov rdx, r11
+	call ReallocLongVal
+	test rax, rax
+	je @Error
+	mov rsi, rax
+	;write zero re-ted to memory
+	add rax, r11
+	dec rax
+	mov byte ptr[rax], 0
+	
+@if: ;add op2 to op1
+	cmp r14, r12
+	jnb @elseif
+	mov al, byte ptr[rdi + r14]
+	mov ah, BFlags
+	sahf
+	adc byte ptr[rsi + r14], al
+	lahf
+	mov BFlags, ah
+	jmp @endif
+	
+@elseif: ;in case of end op2
+	mov ah, BFlags
+	sahf
+	adc byte ptr[rsi + r14], 0
+	lahf
+	mov BFlags, ah
+
+@endif:
+
+	inc r14
+	cmp r14, r12
+	jb @do
+	mov ah, BFlags
+	sahf
+	lahf
+	mov BFlags, ah
+	jc @do
+	
+	or rax, 1
+	jmp @F
+	
+@Error:
+	mov eax, 0
+	
+@@:	
+	
+	add rsp, 30h
+	pop r14
+	pop r12
+	pop r11
+	pop rdi
+	pop rsi
+	ret
+LongValUnsignedSub endp
 
 AllocLongVal proc
 ;Add new longval to global_set
@@ -358,7 +537,6 @@ ReallocLongVal proc desc:QWORD, new_size:QWORD
 	test rax, rax
 	je @Error
 	
-	or rax, 1
 	jmp @F
 	
 @Error:

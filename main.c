@@ -11,6 +11,13 @@ Needed for long arithmetic testing
 
 uint64_t numbers[100];
 
+static void mult(uint64_t op1, uint64_t op2, int times)
+{
+	for (uint64_t i = 0; i < times; i++) {
+		if (LongValUnsignedAdd(op2, op1) == 0)
+			puts("error addition");
+	}
+}
 
 int main(void)
 {	
@@ -19,18 +26,28 @@ int main(void)
 		
 		for (int i = 0; (numbers[i] = FreeLongVal(numbers[i])) && i < 100; i++);
 	}
+
 	
-	uint64_t val;
-	
-	val = AllocLongVal(val);
+	uint64_t val1 = AllocLongVal();
+	uint64_t val2 = AllocLongVal();
 	while (1) {
 		int temp;
 		scanf("%d", &temp);
-		IntToLongVal(temp, val);
-		DumpLongVal(val);
+		if (IntToLongVal(temp, val1) == 0)
+			puts("Error int to longval");
+		scanf("%d", &temp);
+		if (IntToLongVal(0, val2) == 0)
+			puts("Error inttolongval");
+		DumpLongVal(val2);
+		
+		printf("Multiplication res: ");
+		mult(val1, val2, temp);
+		if (DumpLongVal(val2) == 0)
+			puts("Dump error");
 		
 	}
-	FreeLongVal(val);
+	FreeLongVal(val1);
+	FreeLongVal(val2);
 	
 	puts("hi");
 	

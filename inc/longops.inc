@@ -21,11 +21,11 @@ VALSET ENDS
 
 EXTERNDEF global_set:VALSET
 
-LongValUnsignedAdd PROTO op1:PTR longval, op2: PTR longval
+LongValUnsignedAdd PROTO op1:QWORD, op2: QWORD
 
 LongValSub PROTO op1:PTR longval, op2: PTR longval
 
-LongValToStdString PROTO target:PTR BYTE, source: PTR longval
+LongValToStdString PROTO target:QWORD, source:QWORD
 
 AllocLongVal	PROTO	
 FreeLongVal		PROTO	descriptor:QWORD

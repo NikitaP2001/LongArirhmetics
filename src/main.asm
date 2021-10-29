@@ -108,8 +108,7 @@ DumpLongVal proc desc:QWORD
 	test rbx, rbx
 	je @Error
 	
-	lea rsi, (longval PTR [rdi]).val_ptr
-	mov rsi, QWORD PTR [rsi]
+	mov rsi, (longval PTR [rdi]).val_ptr
 	;case nullptr
 	test rsi, rsi
 	je @Error
