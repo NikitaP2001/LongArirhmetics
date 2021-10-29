@@ -2,6 +2,7 @@ LIBRARY longar64
 EXPORTS DllMain
 DumpLongVal
 LongValUnsignedAdd
+LongValUnsignedSub
 AllocLongVal
 FreeLongVal
 IntToLongVal

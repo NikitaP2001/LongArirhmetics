@@ -139,8 +139,9 @@ LongValUnsignedAdd proc op1:QWORD, op2: QWORD
 LongValUnsignedAdd endp
 
 LongValUnsignedSub proc op1:QWORD, op2: QWORD
-;	Add second operand to first, not change
-;	sign qword
+;	Sub second operand from first, not change
+;	sign qword. First operand must be less 
+;	than second by module.
 ;	ret: 
 ;		not a zero is case of success
 ;	Note: This function must not be called 
@@ -206,25 +207,15 @@ LongValUnsignedSub proc op1:QWORD, op2: QWORD
 	;check fisrt op for owfl
 	cmp r14, r11
 	jb @if
-	inc r11
-	mov rcx, op1
-	mov rdx, r11
-	call ReallocLongVal
-	test rax, rax
-	je @Error
-	mov rsi, rax
-	;write zero re-ted to memory
-	add rax, r11
-	dec rax
-	mov byte ptr[rax], 0
+	jmp @Error
 	
-@if: ;add op2 to op1
+@if: ;sub op2 from op1
 	cmp r14, r12
 	jnb @elseif
 	mov al, byte ptr[rdi + r14]
 	mov ah, BFlags
 	sahf
-	adc byte ptr[rsi + r14], al
+	sbb byte ptr[rsi + r14], al
 	lahf
 	mov BFlags, ah
 	jmp @endif
@@ -232,7 +223,7 @@ LongValUnsignedSub proc op1:QWORD, op2: QWORD
 @elseif: ;in case of end op2
 	mov ah, BFlags
 	sahf
-	adc byte ptr[rsi + r14], 0
+	sbb byte ptr[rsi + r14], 0
 	lahf
 	mov BFlags, ah
 

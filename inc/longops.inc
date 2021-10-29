@@ -23,6 +23,8 @@ EXTERNDEF global_set:VALSET
 
 LongValUnsignedAdd PROTO op1:QWORD, op2: QWORD
 
+LongValUnsignedSub PROTO op1:QWORD, op2: QWORD
+
 LongValSub PROTO op1:PTR longval, op2: PTR longval
 
 LongValToStdString PROTO target:QWORD, source:QWORD
