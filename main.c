@@ -31,9 +31,9 @@ int main(void)
 		if (IntToLongVal(temp, val2) == 0)
 			puts("Error inttolongval");
 		
-		printf("Substraction res: ");
-		if (LongValUnsignedSub(val1, val2) == 0)
-			puts("Sub error");	
+		printf("Addition res: ");
+		if (AddLongVal(val1, val2) == 0)
+			puts("Addition error");	
 		DumpLongVal(val1);
 	}
 	FreeLongVal(val1);

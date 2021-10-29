@@ -12,7 +12,7 @@ global_set VALSET <0, 0>
 
 .code
 
-LongValUnsignedAdd proc op1:QWORD, op2: QWORD
+UAddLongVal proc op1:QWORD, op2: QWORD
 ;	Add second operand to first, not change
 ;	sign qword
 ;	ret: 
@@ -136,9 +136,9 @@ LongValUnsignedAdd proc op1:QWORD, op2: QWORD
 	pop rdi
 	pop rsi
 	ret
-LongValUnsignedAdd endp
+UAddLongVal endp
 
-LongValUnsignedSub proc op1:QWORD, op2: QWORD
+USubLongVal proc op1:QWORD, op2: QWORD
 ;	Sub second operand from first, not change
 ;	sign qword. First operand must be less 
 ;	than second by module.
@@ -253,7 +253,7 @@ LongValUnsignedSub proc op1:QWORD, op2: QWORD
 	pop rdi
 	pop rsi
 	ret
-LongValUnsignedSub endp
+USubLongVal endp
 
 AllocLongVal proc
 ;Add new longval to global_set
@@ -507,6 +507,7 @@ IntToLongVal endp
 ReallocLongVal proc desc:QWORD, new_size:QWORD
 	push rdi
 	push r10
+	push r11
 	sub rsp, 28h
 	mov new_size, rdx
 	
@@ -534,9 +535,197 @@ ReallocLongVal proc desc:QWORD, new_size:QWORD
 	xor rax, rax
 @@:
 	add rsp, 28h
+	pop r11
 	pop r10
 	pop rdi
 	ret
 ReallocLongVal endp
 
+AddLongVal proc op1:QWORD, op2: QWORD
+	sub rsp, 28h
+	mov op1, rcx
+	mov op2, rdx
+	
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov r11, rax
+	
+	mov rcx, op2
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov r12, rax
+	
+	mov rax, (longval ptr[r11]).val_sign
+	test rax, rax
+	jne @op1lz
+	
+	mov rax, (longval ptr[r12]).val_sign
+	test rax, rax
+	jne @diffsign
+	
+@onesign:
+	mov rcx, op1
+	mov rdx, op2
+	call UAddLongVal
+	test rax, rax
+	je @Error
+	or rax, 1
+	jmp @end
+	
+@op1lz: ;op1 < 0
+	mov rdx, (longval ptr[r12]).val_sign
+	test rax, rax
+	jne @onesign
+
+@diffsign:
+	;compare
+	mov rcx, op1
+	mov rdx, op2
+	call UCmpLongVal
+	test rax, rax
+	jz @F
+	
+	;|op2| < |op1|
+	mov rcx, op1
+	mov rdx, op2
+	call USubLongVal
+	test rax, rax
+	je @Error
+	or rax, 1
+	jmp @end
+	
+@@: ;|op2| >= |op1|
+	mov rcx, op2
+	mov rdx, op1
+	call USubLongVal
+	test rax, rax
+	je @Error
+	mov rcx, op1
+	mov rdx, op2
+	call XchgLongVal
+	or rax, 1
+	jmp @end
+	
+@Error:
+	xor rax, rax
+
+@end:
+	add rsp, 28h
+	ret
+AddLongVal endp
+
+XchgLongVal proc op1:QWORD, op2: QWORD
+	push r10
+	sub rsp, 28h
+	mov op1, rcx
+	mov op2, rdx
+	
+	call AllocLongVal
+	test rax, rax
+	je @Error
+	mov r10, rax
+	
+	mov rcx, r10
+	mov rdx, op1
+	call MovLongVal
+	test rax, rax
+	je @Error
+	
+	mov rcx, op1
+	mov rdx, op2
+	call MovLongVal
+	test rax, rax
+	je @Error
+	
+	mov rcx, op2
+	mov rdx, r10
+	call MovLongVal
+	test rax, rax
+	je @Error
+	
+	mov rcx, r10
+	call FreeLongVal
+	test rax, rax
+	je @Error
+	
+	or rax, 1
+	jmp @end
+	
+@Error:
+	xor rax, rax
+
+@end:
+
+	add rsp, 28h
+	pop r10
+	ret
+XchgLongVal endp
+
+MovLongVal proc dest:QWORD, source: QWORD
+	sub rsp, 28h
+
+	call UAddLongVal
+	test rax, rax
+	je @Error
+	or rax, 1
+	jmp @end
+		
+@Error:
+	xor rax, rax
+	
+@end:
+
+	add rsp, 28h
+	ret
+MovLongVal endp
+
+UCmpLongVal proc op1:QWORD, op2:QWORD
+	push r10
+	push rbx
+	sub rsp, 28h
+	mov op1, rcx
+	mov op2, rdx
+	
+	call AllocLongVal
+	test rax, rax
+	je @Error
+	
+	mov r10, rax
+	
+	mov rcx, r10
+	mov rdx, op1
+	call MovLongVal
+	test rax, rax
+	je @Error
+	
+	mov rcx, r10
+	mov rdx, op2
+	call USubLongVal
+	mov rbx, rax
+	
+	mov rcx, r10
+	call FreeLongVal
+	test rax, rax
+	je @Error
+	
+	mov rax, rbx
+	jmp @end
+
+@Error:
+	xor rax, rax
+	
+@end:
+
+	add rsp, 28h
+	pop rbx
+	pop r10
+	ret
+UCmpLongVal endp
+
 END
+
+
+
+

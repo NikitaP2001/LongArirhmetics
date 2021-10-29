@@ -21,11 +21,23 @@ VALSET ENDS
 
 EXTERNDEF global_set:VALSET
 
-LongValUnsignedAdd PROTO op1:QWORD, op2: QWORD
+UAddLongVal PROTO op1:QWORD, op2: QWORD
 
-LongValUnsignedSub PROTO op1:QWORD, op2: QWORD
+USubLongVal PROTO op1:QWORD, op2: QWORD
 
-LongValSub PROTO op1:PTR longval, op2: PTR longval
+XchgLongVal PROTO op1:QWORD, op2: QWORD
+
+MovLongVal PROTO dest:QWORD, source: QWORD
+
+AddLongVal PROTO op1:QWORD, op2: QWORD
+
+UCmpLongVal PROTO op1:QWORD, op2:QWORD
+
+CmpEqualLongVal PROTO op1:QWORD, op2: QWORD
+
+CmpGreaterLongVal PROTO op1:QWORD, op2: QWORD
+
+CmpLowerLongVal PROTO op1:QWORD, op2: QWORD
 
 LongValToStdString PROTO target:QWORD, source:QWORD
 
