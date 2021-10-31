@@ -1,9 +1,10 @@
-IFNDEF main
+IFNDEF MAIN_INC
+MAIN_INC EQU MAIN_INC
 DEBUG EQU DEBUG
 
-HeapAlloc TEXTEQU RtlAllocateHeap
-HeapReAlloc TEXTEQU RtlReAllocateHeap
-HeapValidate TEXTEQU RtlValidateHeap
+HeapAlloc EQU RtlAllocateHeap
+HeapReAlloc EQU RtlReAllocateHeap
+HeapValidate EQU RtlValidateHeap
 
 EXTERNDEF DllHeapHandle:QWORD
 

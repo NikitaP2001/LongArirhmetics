@@ -8,7 +8,7 @@ includelib kernel32.lib
 includelib ntdll.lib
 
 include main.inc
-include longops.inc
+include longval.inc
 
 DLL_PROCESS_ATTACH equ 1
 DLL_PROCESS_DETACH equ 0
