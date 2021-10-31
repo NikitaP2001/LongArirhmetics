@@ -14,7 +14,8 @@ global_set VALSET <0, 0>
 
 UAddLongVal proc op1:QWORD, op2: QWORD
 ;	Add second operand to first, not change
-;	sign qword
+;	sign qword BUT in case of sero result 
+;	set sign to 0
 ;	ret: 
 ;		not a zero is case of success
 ;	Note: This function must not be called 
@@ -27,7 +28,7 @@ UAddLongVal proc op1:QWORD, op2: QWORD
 	push r11
 	push r12
 	push r14
-	sub rsp, 30h
+	sub rsp, 28h
 	mov op1, rcx
 	mov op2, rdx
 	
@@ -129,7 +130,7 @@ UAddLongVal proc op1:QWORD, op2: QWORD
 	
 @@:	
 	
-	add rsp, 30h
+	add rsp, 28h
 	pop r14
 	pop r12
 	pop r11
@@ -140,12 +141,12 @@ UAddLongVal endp
 
 USubLongVal proc op1:QWORD, op2: QWORD
 ;	Sub second operand from first, not change
-;	sign qword. First operand must be less 
+;	sign qword. First operand MUST be less 
 ;	than second by module.
 ;	ret: 
 ;		not a zero is case of success
 ;	Note: This function must not be called 
-;	outside of module
+;	outside of this module
 ;--------------------------------------------------------
 	LOCAL BFlags:BYTE
 	
@@ -154,7 +155,7 @@ USubLongVal proc op1:QWORD, op2: QWORD
 	push r11
 	push r12
 	push r14
-	sub rsp, 30h
+	sub rsp, 28h
 	mov op1, rcx
 	mov op2, rdx
 	
@@ -162,6 +163,7 @@ USubLongVal proc op1:QWORD, op2: QWORD
 	mov rcx, op1
 	call GetLongvalPtr
 	test rax, rax
+	mov rsi, rax
 	je @Error
 	mov r11, (longval PTR [rax]).val_size
 	;case zero size
@@ -172,11 +174,16 @@ USubLongVal proc op1:QWORD, op2: QWORD
 	mov rcx, op2
 	call GetLongvalPtr
 	test rax, rax
+	mov rdi, rax
 	je @Error
 	mov r12, (longval PTR [rax]).val_size
 	;case zero size
 	test r12, r12
 	je @Error
+	
+	;len op2 > len op1
+	cmp r12, r11
+	ja @Error
 	
 	xor r14, r14
 	clc
@@ -184,30 +191,18 @@ USubLongVal proc op1:QWORD, op2: QWORD
 	mov BFlags, ah
 
 	;read op1 address
-	mov rcx, op1
-	call GetLongvalPtr
-	test rax, rax
-	je @Error
-	mov rsi, (longval PTR [rax]).val_ptr
+	mov rsi, (longval PTR [rsi]).val_ptr
 	;case nullptr
 	test rsi, rsi
 	je @Error
 	
 	;read op2 address
-	mov rcx, op2
-	call GetLongvalPtr
-	test rax, rax
-	je @Error
-	mov rdi, (longval PTR [rax]).val_ptr
+	mov rdi, (longval PTR [rdi]).val_ptr
 	;case nullptr
 	test rdi, rdi
 	je @Error
 	
 @do:
-	;check fisrt op for owfl
-	cmp r14, r11
-	jb @if
-	jmp @Error
 	
 @if: ;sub op2 from op1
 	cmp r14, r12
@@ -232,11 +227,36 @@ USubLongVal proc op1:QWORD, op2: QWORD
 	inc r14
 	cmp r14, r12
 	jb @do
+	
 	mov ah, BFlags
 	sahf
 	lahf
 	mov BFlags, ah
-	jc @do
+	jnc @F
+	
+	;op1 > op2
+	cmp r14, r11
+	je @Error
+	
+	jmp @do
+	
+@@:
+	;check zero result
+	cmp r14, r11
+	jne @F
+	
+	cmp byte ptr[rsi+r14-1], 0
+	jne @F
+	mov rcx, op1
+	call GetLongvalPtr
+	mov (longval ptr[rax]).val_sign, 0
+	
+@@:
+	
+	mov rcx, op1
+	call CompactLongVal
+	test rax, rax
+	jz @Error
 	
 	or rax, 1
 	jmp @F
@@ -246,7 +266,7 @@ USubLongVal proc op1:QWORD, op2: QWORD
 	
 @@:	
 	
-	add rsp, 30h
+	add rsp, 28h
 	pop r14
 	pop r12
 	pop r11
@@ -575,7 +595,7 @@ AddLongVal proc op1:QWORD, op2: QWORD
 	jmp @end
 	
 @op1lz: ;op1 < 0
-	mov rdx, (longval ptr[r12]).val_sign
+	mov rax, (longval ptr[r12]).val_sign
 	test rax, rax
 	jne @onesign
 
@@ -723,6 +743,53 @@ UCmpLongVal proc op1:QWORD, op2:QWORD
 	pop r10
 	ret
 UCmpLongVal endp
+
+CompactLongVal proc desc:QWORD
+	push rdi
+	push rbx
+	sub rsp, 28h
+	mov desc, rcx
+	
+	call GetLongvalPtr
+	test rax, rax
+	jz @Error
+	
+	mov rdi, (longval ptr[rax]).val_ptr
+	mov rbx, (longval ptr[rax]).val_size
+	add rdi, rbx
+	dec rdi
+	
+@@:
+	cmp byte ptr[rdi], 0
+	jne @F
+	
+	cmp rbx, 1
+	jbe @F
+	
+	dec rdi
+	dec rbx
+	cmp rbx, 1
+	jmp @B
+	
+@@:
+	mov rcx, desc
+	mov rdx, rbx
+	call ReallocLongVal
+	test rax, rax
+	jz @Error
+	
+	jmp @end
+	
+@Error:
+	xor rax, rax
+
+@end:
+
+	add rsp, 28h
+	pop rbx
+	pop rdi
+	ret
+CompactLongVal endp
 
 END
 

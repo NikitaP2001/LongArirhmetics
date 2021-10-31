@@ -30,6 +30,8 @@ int main(void)
 		scanf("%d", &temp);
 		if (IntToLongVal(temp, val2) == 0)
 			puts("Error inttolongval");
+		DumpLongVal(val1);
+		DumpLongVal(val2);
 		
 		printf("Addition res: ");
 		if (AddLongVal(val1, val2) == 0)

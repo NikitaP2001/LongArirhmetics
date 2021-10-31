@@ -43,6 +43,8 @@ LongValToStdString PROTO target:QWORD, source:QWORD
 
 AllocLongVal	PROTO	
 FreeLongVal		PROTO	descriptor:QWORD
+CompactLongVal PROTO desc:QWORD
+ReallocLongVal PROTO desc:QWORD, new_size:QWORD
 
 GetLongvalPtr PROTO desc:QWORD
 

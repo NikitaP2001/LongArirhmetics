@@ -5,4 +5,4 @@ AddLongVal
 AllocLongVal
 FreeLongVal
 IntToLongVal
-
+CompactLongVal
