@@ -515,15 +515,41 @@ UCmpLongVal proc op1:QWORD, op2:QWORD
 	ret
 UCmpLongVal endp
 
-CutLongVal proc dest:QWORD, p1:DWORD, p2:DWORD, tar:QWORD
+CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
+	push rsi
+	push rdi
 	sub rsp, 28h
 	mov dest, rcx
-	mov p1, edx
-	mov p2, r8d
-	mov tar, r9
+	mov p1, rdx
+	mov p2, r8
+	mov source, r9
 
+	call GetLongvalPtr
+	mov rdi, (longval ptr[rax]).val_ptr
+	
+	mov rcx, source
+	call GetLongvalPtr
+	mov rsi, (longval ptr[rax]).val_ptr
+	add rsi, p1
+	
+	mov rdx, p2
+	sub rdx, p1
+	inc rdx
+	mov rcx, dest
+	call ReallocLongVal
+	
+	mov rcx, p2
+	sub rcx, p1
+	inc rcx
+	
+	rep movsb
+	
+	mov rcx, dest
+	call CompactLongVal
 
 	add rsp, 28h
+	pop rdi
+	pop rsi
 	ret
 CutLongVal endp
 	

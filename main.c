@@ -22,25 +22,20 @@ int main(void)
 	
 	uint64_t val1 = AllocLongVal();
 	uint64_t val2 = AllocLongVal();
-	while (1) {
-		int temp;
-		scanf("%d", &temp);
-		if (IntToLongVal(temp, val1) == 0)
-			puts("Error int to longval");
-		scanf("%d", &temp);
-		if (IntToLongVal(temp, val2) == 0)
-			puts("Error inttolongval");
-		DumpLongVal(val1);
-		DumpLongVal(val2);
-		
-		printf("Addition res: ");
-		if (AddLongVal(val1, val2) == 0)
-			puts("Addition error");	
-		DumpLongVal(val1);
-	}
+	
+	IntToLongVal(845674567, val1);
+	DumpLongVal(val1);
+	
+	unsigned int i, j;
+	scanf("%u %u", &i, &j);
+	
+	DumpLongVal(val1);
+	DumpLongVal(val2);
+	
+	
+	
+	
 	FreeLongVal(val1);
 	FreeLongVal(val2);
-	
-	puts("hi");
 	
 }
