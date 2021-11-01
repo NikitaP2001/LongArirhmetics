@@ -17,4 +17,6 @@ LongValToStdString PROTO target:QWORD, source:QWORD
 
 IntToLongVal PROTO ival:DWORD, desc:QWORD
 
+MultLongVal PROTO dest:QWORD, op1:QWORD, op2: QWORD
+
 ENDIF

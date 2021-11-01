@@ -583,7 +583,115 @@ CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
 	pop rsi
 	ret
 CutLongVal endp
+
+PartialMultLongVal proc dest:QWORD,
+						op1:QWORD,
+						op2:QWORD,
+						p1:QWORD,
+						p2:QWORD,
+						p3:QWORD,
+						p4:QWORD
+	push r11
+	push r12
+	push rsi
+	push rdi
+	sub rsp, 28h
+	mov dest, rcx
+	mov op1, rdx
+	mov op2, r8
+	mov p1, r9
 	
+	cmp r9, p2
+	jne @F
+	mov rax, p3
+	cmp rax, p4
+	jne @F
+	
+	;get longval op1 ptr
+	mov rcx, op1
+	call GetLongvalPtr
+	mov r11, rax
+	
+	;get longval op2 ptr
+	mov rcx, op2
+	call GetLongvalPtr
+	mov r12, rax
+	
+	mov rsi, (longval ptr[r11]).val_ptr
+	mov rdi, (longval ptr[r12]).val_ptr
+	
+	add rsi, p1
+	add rdi, p3
+	movzx rax, byte ptr[rsi]
+	mul byte ptr[rdi]
+	
+	mov rcx, rax
+	mov rdx, dest
+	call IntToLongVal
+	
+	or rax, 1
+	jmp @end
+@@:
+
+@end:
+
+	add rsp, 28h
+	pop rdi
+	pop rsi
+	pop r12
+	pop r11
+	ret
+PartialMultLongVal endp
+
+MultLongVal proc dest:QWORD, op1:QWORD, op2: QWORD
+	sub rsp, 28h
+	mov op1, rcx
+	mov op2, rdx
+	
+	;get op1 end pos
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov rdi, (longval ptr[rax]).val_size
+	dec rdi
+	
+	;get op2 end pos
+	mov rcx, op2
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	mov rsi, (longval ptr[rax]).val_size
+	dec rsi
+	
+	;check is dest valid
+	mov rcx, dest
+	call GetLongvalPtr
+	test rax, rax
+	je @Error
+	
+	mov rcx, dest
+	mov rdx, op1
+	mov r8, op2
+	xor r9, r9
+	mov qword ptr[rsp+20h], rdi
+	mov qword ptr[rsp+28h], 0
+	mov qword ptr[rsp+30h], rsi
+	call PartialMultLongVal
+	test rax, rax
+	je @Error
+	
+	or rax, 1
+	jmp @end
+	
+@Error:
+	xor rax, rax
+
+@end:
+
+	add rsp, 28h
+	ret
+MultLongVal endp
+
 END
 
 
