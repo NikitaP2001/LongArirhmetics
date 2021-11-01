@@ -5,3 +5,5 @@ AddLongVal
 AllocLongVal
 FreeLongVal
 IntToLongVal
+XchgLongVal
+MovLongVal

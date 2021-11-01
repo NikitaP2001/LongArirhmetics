@@ -111,7 +111,7 @@ FreeLongVal	proc descriptor:QWORD
 	;free valptr
 	mov rcx, DllHeapHandle
 	xor rdx, rdx
-	mov r8, rbx
+	mov r8, (longval ptr[r8]).val_ptr
 	call HeapFree
 	test rax, rax
 	je @Error
@@ -123,13 +123,15 @@ FreeLongVal	proc descriptor:QWORD
 	call HeapFree
 	test rax, rax
 	je @Error
+	mov qword ptr[rdi], 0
 	
 	;move last
 	mov rcx, (VALSET PTR global_set).val_count
 	mov rdx, (VALSET PTR global_set).val_array
 	lea rdx, [rdx + rcx * 8 - 8]
-	mov rdx, qword ptr [rdx]
-	mov qword ptr [rdi], rdx
+	mov rax, qword ptr [rdx]
+	mov qword ptr[rdx], 0
+	mov qword ptr [rdi], rax
 	
 	;realloc array
 	cmp rcx, 10

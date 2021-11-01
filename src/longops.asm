@@ -333,6 +333,8 @@ IntToLongVal proc ival:DWORD, desc:QWORD
 IntToLongVal endp
 
 AddLongVal proc op1:QWORD, op2: QWORD
+	push r11
+	push r12
 	sub rsp, 28h
 	mov op1, rcx
 	mov op2, rdx
@@ -404,6 +406,8 @@ AddLongVal proc op1:QWORD, op2: QWORD
 
 @end:
 	add rsp, 28h
+	pop r12
+	pop r11
 	ret
 AddLongVal endp
 
@@ -456,10 +460,26 @@ XchgLongVal endp
 
 MovLongVal proc dest:QWORD, source: QWORD
 	sub rsp, 28h
-
-	call UAddLongVal
+	mov dest, rcx
+	mov source, rdx
+	
+	;check first for dest
+	call GetLongvalPtr
 	test rax, rax
 	je @Error
+	
+	mov rcx, source
+	call GetLongvalPtr 
+	test rax, rax
+	je @Error
+	mov r8, (longval ptr[rax]).val_size
+	dec r8
+	
+	xor rdx, rdx
+	mov r9, source
+	mov rcx, dest
+	call CutLongVal
+
 	or rax, 1
 	jmp @end
 		
@@ -516,6 +536,17 @@ UCmpLongVal proc op1:QWORD, op2:QWORD
 UCmpLongVal endp
 
 CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
+;	Copies part of source from p1 pos to p2 pos to
+;	dest. Error checking must be done outside
+;		@dest -	logval for insert bytes to
+;		@p1 - from which byte start copy,
+;		expects to be >= 0 , < p2 and < source len
+;		@p3	- to which byte copy, expects to
+;		be >= 0 and < source len
+;		@source - lonval to copy bytes from
+;	This function must not be exported or used
+;	outside of this module
+;------------------------------------------------
 	push rsi
 	push rdi
 	sub rsp, 28h

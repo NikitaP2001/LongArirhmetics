@@ -23,17 +23,15 @@ int main(void)
 	uint64_t val1 = AllocLongVal();
 	uint64_t val2 = AllocLongVal();
 	
-	IntToLongVal(845674567, val1);
-	DumpLongVal(val1);
-	
 	unsigned int i, j;
 	scanf("%u %u", &i, &j);
+	IntToLongVal(i, val1);
+	IntToLongVal(j, val2);
+	
+	AddLongVal(val1, val2);
 	
 	DumpLongVal(val1);
 	DumpLongVal(val2);
-	
-	
-	
 	
 	FreeLongVal(val1);
 	FreeLongVal(val2);
