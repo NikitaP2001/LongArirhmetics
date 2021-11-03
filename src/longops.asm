@@ -584,24 +584,76 @@ CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
 	ret
 CutLongVal endp
 
+ShiftLongVal proc desc:QWORD, shift:QWORD
+;       Makes logical right shift of
+;       longval value
+;       Expects valid longval descriptor
+;------------------------------
+        push rbx
+        push r11
+        push r12
+        push r13
+        push rdi
+        push rsi
+        sub rsp, 28h
+        mov r11, rcx
+        mov r12, rdx
+        call GetLongvalPtr
+        mov rbx, rax
+        
+        mov rcx, r11
+        mov r13, (longval ptr[rax]).val_size
+        mov rdx, r13
+        add rdx, r12
+        call ReallocLongVal
+        
+        mov rdi, (longval ptr[rbx]).val_ptr
+        mov rcx, r13
+        lea rdi, [rdi+rcx-1]
+        mov rsi, rdi
+        add rdi, r12
+        
+        std
+        rep movsb
+        
+        mov rdi, (longval ptr[rbx]).val_ptr
+        mov rcx, r12
+        xor rax, rax
+        cld
+        rep stosb
+            
+        add rsp, 28h
+        pop rsi
+        pop rdi
+        pop r13
+        pop r12
+        pop r11
+        pop rbx
+        ret
+ShiftLongVal endp
+
 PartialMultLongVal proc dest:QWORD,
-						op1:QWORD,
-						op2:QWORD,
-						p1:QWORD,
-						p2:QWORD,
-						p3:QWORD,
-						p4:QWORD
+                        op1:QWORD,
+                        op2:QWORD,
+                        p1:QWORD,
+                        p2:QWORD,
+                        p3:QWORD,
+                        p4:QWORD
+        mid1 EQU qword ptr[rbp-8]
+        mid2 EQU qword ptr[rbp-10h]
+        mid3 EQU qword ptr[rbp-18h]
+        mid4 EQU qword ptr[rbp-20h]
 	push r11
 	push r12
 	push rsi
 	push rdi
-	sub rsp, 28h
+	sub rsp, 48h
 	mov dest, rcx
 	mov op1, rdx
 	mov op2, r8
 	mov p1, r9
 	
-	cmp r9, p2
+	cmp r9, p2      ;impossible to devide than multimly
 	jne @F
 	mov rax, p3
 	cmp rax, p4
@@ -631,11 +683,36 @@ PartialMultLongVal proc dest:QWORD,
 	
 	or rax, 1
 	jmp @end
+        
+@@:     ;Try to devide op1 by half
+        mov rax, p1
+        mov mid1, rax   ;Initilize middle pointer
+        mov mid2, rax
+        cmp rax, p2
+        je @F
+        add rax, p2
+        shl rax, 1
+        mov mid1, rax
+        inc rax
+        mov mid2, rax
+        
+@@:     ;Try to devide op2 by half
+        mov rax, p3
+        mov mid3, rax    ;Initilize middle pointer
+        mov mid4, rax
+        cmp rax, p4     
+        je @F
+        add rax, p4
+        shl rax, 1
+        mov mid3, rax
+        inc rax
+        mov mid4, rax
+        
 @@:
-
+     
 @end:
 
-	add rsp, 28h
+	add rsp, 48h
 	pop rdi
 	pop rsi
 	pop r12
@@ -644,9 +721,12 @@ PartialMultLongVal proc dest:QWORD,
 PartialMultLongVal endp
 
 MultLongVal proc dest:QWORD, op1:QWORD, op2: QWORD
-	sub rsp, 28h
-	mov op1, rcx
-	mov op2, rdx
+        push rdi
+        push rsi
+	sub rsp, 38h
+        mov dest, rcx
+	mov op1, rdx
+	mov op2, r8
 	
 	;get op1 end pos
 	call GetLongvalPtr
@@ -688,7 +768,9 @@ MultLongVal proc dest:QWORD, op1:QWORD, op2: QWORD
 
 @end:
 
-	add rsp, 28h
+	add rsp, 38h
+        pop rsi
+        pop rdi
 	ret
 MultLongVal endp
 

@@ -21,21 +21,15 @@ int main(void)
 
 	
 	uint64_t val1 = AllocLongVal();
-	uint64_t val2 = AllocLongVal();
-	uint64_t res = AllocLongVal();
 	
 	unsigned int i, j;
 	scanf("%u %u", &i, &j);
 	IntToLongVal(i, val1);
-	IntToLongVal(j, val2);
 	
-	MultLongVal(res, val1, val2);
+	ShiftLongVal(val1, j);
 	
-	DumpLongVal(res);
 	DumpLongVal(val1);
-	DumpLongVal(val2);
 	
 	FreeLongVal(val1);
-	FreeLongVal(val2);
 	
 }

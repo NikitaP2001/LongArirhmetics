@@ -178,17 +178,15 @@ ReallocLongVal proc desc:QWORD, new_size:QWORD
 	mov rdi, rax
 	
 	mov rdx, new_size
-	cmp rdx, 7FFF8h
-	ja @Error
-
 	mov (longval PTR [rdi]).val_size, rdx
 	mov rcx, DllHeapHandle
 	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
 	mov r8, (longval PTR [rdi]).val_ptr
-	mov r9, rdx
+	mov r9, new_size
 	call HeapReAlloc
 	test rax, rax
 	je @Error
+        mov (longval PTR [rdi]).val_ptr, rax
 	
 	jmp @F
 	

@@ -8,3 +8,4 @@ IntToLongVal
 XchgLongVal
 MovLongVal
 MultLongVal
+ShiftLongVal

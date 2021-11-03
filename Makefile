@@ -32,8 +32,8 @@ $(TARGET): $(OBJECTS)
 	$(LNK) $(LDFLAGS) /OUT:$@ $(LDLIBS) $^
 	move .\$(TARGET).lib .\$(LIB_DIR)
 	move $(TARGET) $(TARGET).dll
+	move $(TARGET) $(TARGET).dll
 	del *.exp
 
 clean:
-	@-del $(TARGET).dll $(OBJ_DIR)\*.obj \
-	.\$(LIB_DIR)\*.lib
+	@-del $(TARGET).dll $(OBJ_DIR)\*.obj $(LIB_DIR)\*.lib
