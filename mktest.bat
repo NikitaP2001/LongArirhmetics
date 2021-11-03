@@ -1,10 +1,10 @@
 @echo off
 
 set FILENAME=test
-set SOURCES=*.c
-set OBJECTS=*.o
+set SOURCES=main.c
+set OBJECTS=main.o
 
-set CFLAGS=-O3 -s -mconsole -I./inc
+set CFLAGS=-O3 -std=gnu11 -s -mconsole -I./inc
 set LKFLAGS=-Wl,--gc-sections -L./lib -llongar64
 
 @echo on

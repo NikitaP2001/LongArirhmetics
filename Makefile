@@ -1,3 +1,4 @@
+SHELL=cmd.exe
 TARGET = longar64
 
 SRC_DIR = src
@@ -16,8 +17,8 @@ LDFLAGS = /SUBSYSTEM:WINDOWS /ENTRY:DllMain /DLL /ALIGN:16 \
 	  /DEF:$(TARGET).def
 LDLIBS = /LIBPATH:$(PATH)\lib
 
-CC=E:\masm64\bin\ml64.exe
-LNK=E:\masm64\bin\link.exe
+CC=\masm64\bin\ml64.exe
+LNK=\masm64\bin\link.exe
 
 SOURCES = $(wildcard $(SRC_DIR)/*.asm)
 OBJECTS = $(subst $(SRC_DIR)/,$(OBJ_DIR)/,$(SOURCES:.asm=.obj))
