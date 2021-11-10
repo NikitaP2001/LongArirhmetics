@@ -19,17 +19,32 @@ int main(void)
 		for (int i = 0; (numbers[i] = FreeLongVal(numbers[i])) && i < 100; i++);
 	}
 
-	
 	uint64_t val1 = AllocLongVal();
-	
-	unsigned int i, j;
-	scanf("%u %u", &i, &j);
-	IntToLongVal(i, val1);
-	
-	ShiftLongVal(val1, j);
-	
-	DumpLongVal(val1);
-	
-	FreeLongVal(val1);
-	
+        uint64_t val2 = AllocLongVal();
+        uint64_t res = AllocLongVal();                              
+        
+        int a, b;
+loop:   
+        scanf("%d %d", &a, &b);
+        
+        IntToLongVal(a, val1);
+        IntToLongVal(b, val2);
+        
+        putchar(' ');
+        DumpLongVal(val1);
+        printf("x\n ");        
+        DumpLongVal(val2);
+        puts(" ---------------");       
+        
+        MultLongVal(res, val1, val2);
+        
+        DumpLongVal(res);        
+        
+        goto loop;
+        
+        FreeLongVal(val1);
+        FreeLongVal(val2);
+        FreeLongVal(res);
+        
+        return 0;
 }

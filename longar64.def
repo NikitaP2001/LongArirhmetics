@@ -2,10 +2,12 @@ LIBRARY longar64
 EXPORTS DllMain
 DumpLongVal
 AddLongVal
+SubLongVal
 AllocLongVal
 FreeLongVal
 IntToLongVal
 XchgLongVal
 MovLongVal
 MultLongVal
-ShiftLongVal
+DoubleToLongVal
+PartialMultLongVal

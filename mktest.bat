@@ -4,7 +4,7 @@ set FILENAME=test
 set SOURCES=main.c
 set OBJECTS=main.o
 
-set CFLAGS=-O3 -std=gnu11 -s -mconsole -I./inc
+set CFLAGS=-O0 -std=gnu11 -s -mconsole -I./inc
 set LKFLAGS=-Wl,--gc-sections -L./lib -llongar64
 
 @echo on

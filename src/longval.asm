@@ -18,6 +18,8 @@ AllocLongVal proc
 ;	descriptor:QWORD
 ;-----------------------------
 	push rdi
+        push r10
+        push r11
 	sub rsp, 28h
 
 	mov rcx, (VALSET PTR global_set).val_count
@@ -69,6 +71,7 @@ AllocLongVal proc
 	je @Error
 	mov (longval PTR [rdi]).val_ptr, rax
 	mov (longval PTR [rdi]).descriptor, rax
+        mov (longval PTR [rdi]).val_sign, 0
 	
 	jmp @Exit
 @Error:
@@ -77,6 +80,8 @@ AllocLongVal proc
 @Exit:
 
 	add rsp, 28h
+        pop r11
+        pop r10
 	pop rdi
 	ret
 AllocLongVal endp
