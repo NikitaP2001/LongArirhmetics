@@ -74,7 +74,8 @@ AllocLongVal proc
         mov r10, rax
 @@:     
         mov rcx, r10
-        call GetLongvalPtr        
+        call GetLongvalPtr
+        test rax, rax
         je @F
         inc r10
         jmp @B

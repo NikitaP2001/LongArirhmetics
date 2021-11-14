@@ -78,7 +78,7 @@ IFDEF DEBUG
 sizepat db "Set size: %llu", 10, 0
 
 .data
-dump_pat	db	"%02x ", 0
+dump_pat	db	"%02x", 0
 error_print db "DumpLongVal: invalid longval struct"
 .code
 DumpLongVal proc desc:QWORD
