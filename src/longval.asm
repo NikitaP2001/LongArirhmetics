@@ -70,6 +70,16 @@ AllocLongVal proc
 	call HeapAlloc
 	je @Error
 	mov (longval PTR [rdi]).val_ptr, rax
+        
+        mov r10, rax
+@@:     
+        mov rcx, r10
+        call GetLongvalPtr
+        je @F
+        inc r10
+        jmp @B
+@@:        
+        mov rax, r10
 	mov (longval PTR [rdi]).descriptor, rax
         mov (longval PTR [rdi]).val_sign, 0
 	

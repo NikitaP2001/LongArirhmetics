@@ -13,6 +13,8 @@ uint64_t numbers[20000];
 
 int main(void)
 {	      
+        //wait for debugeee
+        while (!IsDebuggerPresent());
      
 	uint64_t val = AllocLongVal();                            
         
