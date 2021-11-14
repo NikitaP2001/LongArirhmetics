@@ -74,7 +74,7 @@ AllocLongVal proc
         mov r10, rax
 @@:     
         mov rcx, r10
-        call GetLongvalPtr
+        call GetLongvalPtr        
         je @F
         inc r10
         jmp @B
@@ -88,7 +88,6 @@ AllocLongVal proc
 	
 	xor rax, rax
 @Exit:
-
 	add rsp, 28h
         pop r11
         pop r10
@@ -121,8 +120,8 @@ FreeLongVal	proc descriptor:QWORD
 	jmp @B
 	
 @Found:
-	mov rbx, rcx
-	
+	mov rbx, rcx	        
+        
 	;free valptr
 	mov rcx, DllHeapHandle
 	xor rdx, rdx
@@ -255,7 +254,6 @@ CompactLongVal proc desc:QWORD
 	xor rax, rax
 
 @end:
-
 	add rsp, 28h
 	pop rbx
 	pop rdi

@@ -144,6 +144,126 @@ DumpLongVal proc desc:QWORD
 	ret
 DumpLongVal endp
 
+CheckHeap proc
+        push rbx
+        push rsi
+        push rdi
+        push r15
+        push r14
+        push r13
+        push r12
+        push r11
+        push r10
+        push rax
+        push rcx
+        push rdx
+        push r8
+        push r9
+        sub rsp, 28h
+        
+        mov rcx, DllHeapHandle
+        mov rdx, 1
+        xor r8, r8
+        call HeapValidate
+        
+        add rsp, 28h
+        pop r9
+        pop r8
+        pop rdx
+        pop rcx
+        pop rax
+        pop r10
+        pop r11
+        pop r12
+        pop r13
+        pop r14
+        pop r15
+        pop rdi
+        pop rsi
+        pop rbx
+        ret
+CheckHeap endp
+.data
+startmes db "%llx %llx", 10,  0
+endmes db "leave", 0
+
+.code
+StartMsg proc
+        push rbx
+        push rsi
+        push rdi
+        push r15
+        push r14
+        push r13
+        push r12
+        push r11
+        push r10
+        push rax
+        push rcx
+        push rdx
+        push r8
+        push r9
+        sub rsp, 28h
+        
+        lea rcx, startmes
+        call crt_printf
+        
+        add rsp, 28h
+        pop r9
+        pop r8
+        pop rdx
+        pop rcx
+        pop rax
+        pop r10
+        pop r11
+        pop r12
+        pop r13
+        pop r14
+        pop r15
+        pop rdi
+        pop rsi
+        pop rbx
+        ret
+StartMsg endp
+
+EndMsg proc
+        push rbx
+        push rsi
+        push rdi
+        push r15
+        push r14
+        push r13
+        push r12
+        push r11
+        push r10
+        push rax
+        push rcx
+        push rdx
+        push r8
+        push r9
+        sub rsp, 28h
+        
+        lea rcx, endmes
+        call crt_puts
+        
+        add rsp, 28h
+        pop r9
+        pop r8
+        pop rdx
+        pop rcx
+        pop rax
+        pop r10
+        pop r11
+        pop r12
+        pop r13
+        pop r14
+        pop r15
+        pop rdi
+        pop rsi
+        pop rbx
+        ret
+EndMsg endp
+
 ENDIF
 
 end

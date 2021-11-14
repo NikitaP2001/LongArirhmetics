@@ -526,6 +526,7 @@ MovLongVal proc dest:QWORD, source: QWORD
 	mov r8, (longval ptr[rax]).val_size
 	dec r8
 	
+        
 	xor rdx, rdx
 	mov r9, source
 	mov rcx, dest
@@ -537,8 +538,7 @@ MovLongVal proc dest:QWORD, source: QWORD
 @Error:
 	xor rax, rax
 	
-@end:
-
+@end:           
 	add rsp, 28h
 	ret
 MovLongVal endp
@@ -600,14 +600,11 @@ CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
 ;------------------------------------------------
 	push rsi
 	push rdi
-	sub rsp, 28h
+	sub rsp, 28h        
 	mov dest, rcx
 	mov p1, rdx
 	mov p2, r8
-	mov source, r9
-
-	call GetLongvalPtr
-	mov rdi, (longval ptr[rax]).val_ptr
+	mov source, r9        	
 	
 	mov rcx, source
 	call GetLongvalPtr
@@ -618,17 +615,21 @@ CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
 	sub rdx, p1
 	inc rdx
 	mov rcx, dest
-	call ReallocLongVal
-	
+	call ReallocLongVal	
+        
+        mov rcx, dest
+        call GetLongvalPtr
+	mov rdi, (longval ptr[rax]).val_ptr
+        
 	mov rcx, p2
 	sub rcx, p1
 	inc rcx
 	
-	rep movsb
-	
+	rep movsb        	
+        
 	mov rcx, dest
-	call CompactLongVal
-
+	call CompactLongVal       
+                
 	add rsp, 28h
 	pop rdi
 	pop rsi
