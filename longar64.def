@@ -10,4 +10,4 @@ XchgLongVal
 MovLongVal
 MultLongVal
 DoubleToLongVal
-PartialMultLongVal
+ReallocLongVal

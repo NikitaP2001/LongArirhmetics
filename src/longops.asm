@@ -1031,19 +1031,16 @@ DoubleToLongVal proc dval:QWORD, desc:QWORD
         jb @F
         
         fchs 
-        mov (longval ptr[rbx]).val_sign, 1
-@@:        
-        
-        sub rdx, rdx
-        mov rcx, rdi
+        mov (longval ptr[rbx]).val_sign, 1             
+@@:       
+
+        sub rcx, rcx
+        mov rdx, rdi
         call IntToLongVal
         
         ; initilize multiplier
         call AllocLongVal
         mov rsi, rax
-        mov rcx, 07FFFFFFFh
-        mov rdx, rsi
-        call IntToLongVal  
         
         mov ibuf, 07FFFFFFFh ; max int valu
         
@@ -1052,29 +1049,8 @@ DoubleToLongVal proc dval:QWORD, desc:QWORD
         fstsw ax
         fwait
         sahf
-        ja @addfpu
+        jbe @F
         
-        mov rcx, 1
-        mov rdx, rdi
-        call IntToLongVal
-
-@@:     
-        fild ibuf
-        fcomp
-        fstsw ax
-        sahf
-        ja @addfpu       
-        
-        mov rcx, rdi
-        mov rdx, rdi
-        mov r8, rsi
-        call MultLongVal
-        
-        fidiv ibuf
-        
-        jmp @B 
-        
-@addfpu:
         fistp ibuf
         
         mov ecx, ibuf
@@ -1088,7 +1064,48 @@ DoubleToLongVal proc dval:QWORD, desc:QWORD
         mov rcx, rsi
         call FreeLongVal
         
-        xor rax, rax
+        jmp @end
+@@:        
+        mov rcx, 07FFFFFFFh
+        mov rdx, rsi
+        call IntToLongVal  
+        
+        mov rcx, 1
+        mov rdx, rdi
+        call IntToLongVal
+
+@@:     
+        fild ibuf
+        fcomp
+        fstsw ax
+        sahf
+        ja @mulfpu       
+        
+        mov rcx, rdi
+        mov rdx, rdi
+        mov r8, rsi
+        call MultLongVal
+        
+        fidiv ibuf
+        
+        jmp @B 
+        
+@mulfpu:
+        fistp ibuf
+        
+        mov ecx, ibuf
+        mov rdx, rsi
+        call IntToLongVal
+        
+        mov rcx, rdi
+        mov rdx, rdi
+        mov r8, rsi
+        call MultLongVal
+        
+        mov rcx, rsi
+        call FreeLongVal
+        
+        or rax, 1
         jmp @end
         
 @Error:

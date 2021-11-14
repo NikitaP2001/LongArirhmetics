@@ -25,8 +25,8 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 	jne @elseif
 	
 		;initilize heap
-		mov rcx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
-		xor rdx, 20480
+		mov rcx, HEAP_GENERATE_EXCEPTIONS + HEAP_NO_SERIALIZE
+		mov rdx, 0
 		xor r8, r8
 		call HeapCreate
 		test eax, eax
@@ -41,7 +41,7 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 		;initilize vals array
 		mov (VALSET PTR global_set).val_count, 10
 		mov rcx, DllHeapHandle
-		mov rdx, 8
+		mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
 		mov r8, 10 * 8
 		call HeapAlloc
 		test rax, rax
