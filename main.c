@@ -13,20 +13,16 @@ uint64_t numbers[20000];
 
 int main(void)
 {	          
-	uint64_t val = AllocLongVal();                            
+	uint64_t val1 = AllocLongVal();                            
+        uint64_t val2 = AllocLongVal();                            
+        uint64_t res = AllocLongVal();                            
         
-        double fval;
-loop:   
-        scanf("%lf", &fval);
-        
-        DoubleToLongVal(fval, val);
-        
-        DumpLongVal(val);
-        
-        
-        goto loop;
-        
-        FreeLongVal(val); 
+        IntToLongVal(0xFFFF, val1);
+        IntToLongVal(0x1732A, val2);
+        MultLongVal(res, val1, val2);   
+        IntToLongVal(0xE, val2);
+        MultLongVal(res, res, val2);   
+        DumpLongVal(res);
 
         return 0;
 }

@@ -1,5 +1,6 @@
 include longval.inc
 include main.inc
+include stdprocs.inc
 
 .code
 
@@ -712,34 +713,34 @@ PartialMultLongVal proc dest:QWORD,
 	
 	cmp r9, p2      ;impossible to devide than multimly
 	jne @F
-	mov rax, p3
-	cmp rax, p4
-	jne @F
-	
-	;get longval op1 ptr
-	mov rcx, op1
-	call GetLongvalPtr
-	mov r11, rax
-	
-	;get longval op2 ptr
-	mov rcx, op2
-	call GetLongvalPtr
-	mov r12, rax
-	
-	mov rsi, (longval ptr[r11]).val_ptr
-	mov rdi, (longval ptr[r12]).val_ptr
-	
-	add rsi, p1
-	add rdi, p3
-	movzx rax, byte ptr[rsi]
-	mul byte ptr[rdi]
-	
-	mov rcx, rax
-	mov rdx, dest
-	call IntToLongVal
-	
-	or rax, 1
-	jmp @end
+                mov rax, p3
+                cmp rax, p4
+                jne @F
+                
+                ;get longval op1 ptr
+                mov rcx, op1
+                call GetLongvalPtr
+                mov r11, rax
+                
+                ;get longval op2 ptr
+                mov rcx, op2
+                call GetLongvalPtr
+                mov r12, rax
+                
+                mov rsi, (longval ptr[r11]).val_ptr
+                mov rdi, (longval ptr[r12]).val_ptr
+                
+                add rsi, p1
+                add rdi, p3
+                movzx rax, byte ptr[rsi]
+                mul byte ptr[rdi]
+                
+                mov rcx, rax
+                mov rdx, dest
+                call IntToLongVal
+                
+                or rax, 1
+                jmp @end
         
 @@:     ;Try to devide op1 by half
         mov rax, p1
@@ -946,24 +947,33 @@ MultLongVal proc dest:QWORD, op1:QWORD, op2: QWORD
         mov rdx, (longval ptr[rax]).val_sign
         xor rcx, rdx                      
         mov r10, rcx
-        mov (longval ptr[r11]).val_sign, 0
+        mov (longval ptr[r11]).val_sign, 0        
         
         cmp rdi, rsi    ; make ops the same size
-        cmovb rdi, rsi
-        cmova rsi, rdi
+                setne al
+                cmovb rdi, rsi
+                cmova rsi, rdi
 
-        test rdi, rdi   ; make ops even
-        jnp @F
-               inc rdi              
-               inc rsi 
-@@:        
-
-        mov rcx, op1
-        mov rdx, rdi
-        call ReallocLongVal
-        mov rcx, op2
-        mov rdx, rsi
-        call ReallocLongVal
+        cmp rsi, 1
+        je @F
+        
+        mov rcx, rsi
+        call RQwordToPowerOf2
+        cmp rsi, rax
+        je @F
+               mov rsi, rax
+               mov rdi, rax
+               setne al
+@@:
+        test al, al
+        je @F           ;Are going to change size?
+                mov rcx, op1
+                mov rdx, rdi
+                call ReallocLongVal
+                mov rcx, op2
+                mov rdx, rsi
+                call ReallocLongVal  
+@@:
 
 	dec rdi   
 	dec rsi	
