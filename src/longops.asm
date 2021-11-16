@@ -1,6 +1,7 @@
 include longval.inc
 include main.inc
 include stdprocs.inc
+include longops.inc
 
 .code
 
@@ -463,16 +464,16 @@ SubLongVal proc op1:QWORD, op2: QWORD
         ret
 SubLongVal endp
 
+.code
 XchgLongVal proc op1:QWORD, op2: QWORD
 	push r10
+        push rbx
 	sub rsp, 28h
 	mov op1, rcx
 	mov op2, rdx
 	
-	call AllocLongVal
-	test rax, rax
-	je @Error
-	mov r10, rax
+	stalloc
+        mov r10, rax
 	
 	mov rcx, r10
 	mov rdx, op1
@@ -491,11 +492,8 @@ XchgLongVal proc op1:QWORD, op2: QWORD
 	call MovLongVal
 	test rax, rax
 	je @Error
-	
-	mov rcx, r10
-	call FreeLongVal
-	test rax, rax
-	je @Error
+
+        stfree r10
 	
 	or rax, 1
 	jmp @end
@@ -506,6 +504,7 @@ XchgLongVal proc op1:QWORD, op2: QWORD
 @end:
 
 	add rsp, 28h
+        pop rbx
 	pop r10
 	ret
 XchgLongVal endp
@@ -551,10 +550,7 @@ UCmpLongVal proc op1:QWORD, op2:QWORD
 	mov op1, rcx
 	mov op2, rdx
 	
-	call AllocLongVal
-	test rax, rax
-	je @Error
-	
+	stalloc	
 	mov r10, rax
 	
 	mov rcx, r10
@@ -568,10 +564,7 @@ UCmpLongVal proc op1:QWORD, op2:QWORD
 	call USubLongVal
 	mov rbx, rax
 	
-	mov rcx, r10
-	call FreeLongVal
-	test rax, rax
-	je @Error
+	stfree r10
 	
 	mov rax, rbx
 	jmp @end
@@ -767,7 +760,7 @@ PartialMultLongVal proc dest:QWORD,
         mov mid4, rax
         
 @@:
-        call AllocLongVal
+        stalloc
         mov r10, rax
         
         mov rcx, rax
@@ -782,7 +775,7 @@ PartialMultLongVal proc dest:QWORD,
         mov qword ptr[rsp+30h], rax
         call PartialMultLongVal   ; C = w * y
         
-        call AllocLongVal
+        stalloc
         mov r11, rax
         
         mov rcx, rax
@@ -797,7 +790,7 @@ PartialMultLongVal proc dest:QWORD,
         mov qword ptr[rsp+30h], rax
         call PartialMultLongVal   ; D = x * z
         
-        call AllocLongVal
+        stalloc
         mov r12, rax
         
         mov rcx, rax
@@ -806,7 +799,7 @@ PartialMultLongVal proc dest:QWORD,
         mov r9, op1
         call CutLongVal ; get w
         
-        call AllocLongVal
+        stalloc
         mov r13, rax
         
         mov rcx, rax
@@ -825,7 +818,7 @@ PartialMultLongVal proc dest:QWORD,
         mov r9, op2
         call CutLongVal ; get y
         
-        call AllocLongVal
+        stalloc
         mov r14, rax
         
         mov rcx, r14
@@ -876,20 +869,12 @@ PartialMultLongVal proc dest:QWORD,
         mov rdx, r11
         call AddLongVal
         
-        mov rcx, r10
-        call FreeLongVal
+        stfree r10
+        stfree r11
+        stfree r12
+        stfree r13
+        stfree r14
         
-        mov rcx, r11
-        call FreeLongVal
-        
-        mov rcx, r12
-        call FreeLongVal
-        
-        mov rcx, r13
-        call FreeLongVal
-        
-        mov rcx, r14
-        call FreeLongVal
         or rax, 1
         jmp @end
        
@@ -1016,7 +1001,6 @@ MultLongVal proc dest:QWORD, op1:QWORD, op2: QWORD
         pop rdi
 	ret
 MultLongVal endp
-
 
 DoubleToLongVal proc dval:QWORD, desc:QWORD
         ibuf EQU dword ptr[rbp-8]

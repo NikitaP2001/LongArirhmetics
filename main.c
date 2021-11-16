@@ -9,20 +9,32 @@ Needed for long arithmetic testing
 #include <time.h>
 #include "windows.h"
 
-uint64_t numbers[20000];
+static void factorial(int power, uint64_t val)
+{
+        IntToLongVal(1, val);
+        uint64_t temp = AllocLongVal();
+        for (int i = 1; i <= power; i++) {
+                IntToLongVal(i, temp);
+                MultLongVal(val, val, temp);
+        }
+}
 
 int main(void)
 {	          
-	uint64_t val1 = AllocLongVal();                            
-        uint64_t val2 = AllocLongVal();                            
-        uint64_t res = AllocLongVal();                            
+        uint64_t val = AllocLongVal();
+        clock_t t;
+loop:        
+        t = clock();
+        factorial(100, val);
         
-        IntToLongVal(0xFFFF, val1);
-        IntToLongVal(0x1732A, val2);
-        MultLongVal(res, val1, val2);   
-        IntToLongVal(0xE, val2);
-        MultLongVal(res, res, val2);   
-        DumpLongVal(res);
+        t = clock() - t;
+        printf("%f ms\n", ((float)t) / (CLOCKS_PER_SEC/1000));
+        
+        
+        DumpLongVal(val);
+        getchar();
+        goto loop;
+        
 
         return 0;
 }

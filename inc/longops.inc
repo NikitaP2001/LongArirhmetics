@@ -21,6 +21,6 @@ IntToLongVal PROTO ival:DWORD, desc:QWORD
 
 MultLongVal PROTO dest:QWORD, op1:QWORD, op2: QWORD
 
-DoubleToLongVal PROTO dval:QWORD
+DoubleToLongVal PROTO dval:QWORD, desc:QWORD
 
 ENDIF

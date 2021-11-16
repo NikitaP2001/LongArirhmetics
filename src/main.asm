@@ -9,6 +9,7 @@ includelib ntdll.lib
 
 include main.inc
 include longval.inc
+include longops.inc
 
 DLL_PROCESS_ATTACH equ 1
 DLL_PROCESS_DETACH equ 0
@@ -51,7 +52,17 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 		call ExitProcess
 		jmp @endif
 @@:	
-		mov (VALSET PTR global_set).val_array, rax
+		mov (VALSET PTR global_set).val_array, rax                
+                
+                mov r10, StashSize              
+                mov rbx, OFFSET ValStash
+        @for:  
+                        call AllocLongVal
+                        mov (VALREG ptr [rbx]).descriptor, rax
+                        mov (VALREG ptr [rbx]).IsFree, 0      
+                        add rbx, SIZEOF VALREG
+                        dec r10
+                        jne @for             
 	
 	jmp @endif
 @elseif:	

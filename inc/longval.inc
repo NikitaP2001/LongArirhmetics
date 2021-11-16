@@ -20,6 +20,13 @@ VALSET STRUCT
 VALSET ENDS
 EXTERNDEF global_set:VALSET
 
+VALREG STRUCT
+        descriptor      QWORD   0
+        IsFree          QWORD   0
+VALREG ENDS
+
+EXTERNDEF ValStash:VALREG
+StashSize = 1000
 
 AllocLongVal	PROTO	
 
@@ -31,5 +38,53 @@ ReallocLongVal PROTO desc:QWORD, new_size:QWORD
 
 GetLongvalPtr PROTO desc:QWORD
 
+
+
+; Get preallocated longval 
+stalloc MACRO
+LOCAL @for
+LOCAL @endf
+
+        push rdi
+        push rcx
+        mov rcx, StashSize               
+        mov rdi, OFFSET ValStash
+@for:                  
+                cmp (VALREG ptr [rdi]).IsFree, 0    
+                je @endf
+                add  rdi, SIZEOF VALREG
+                dec rcx
+                je @Error
+                jmp @for        
+@endf:     
+        mov rax, (VALREG ptr [rdi]).descriptor
+        mov (VALREG ptr [rdi]).IsFree, 1
+        pop rcx
+        pop rdi
+ENDM
+
+; Mark preallocated longval as free
+stfree MACRO desc
+LOCAL @for
+LOCAL @endf
+        push rdi
+        push rcx
+        push rbx
+        mov rbx, desc
+        mov rcx, StashSize               
+        mov rdi, OFFSET ValStash
+@for:                  
+                cmp (VALREG ptr [rdi]).descriptor, rbx   
+                je @endf
+                add  rdi, SIZEOF VALREG
+                dec rcx
+                je @Error
+                jmp @for        
+@endf:             
+        mov (VALREG ptr [rdi]).IsFree, 0
+	pop rbx
+        pop rcx
+        pop rdi
+ENDM
 
 ENDIF
