@@ -10,4 +10,5 @@ XchgLongVal
 MovLongVal
 MultLongVal
 DoubleToLongVal
+BinToLongVal
 ReallocLongVal

@@ -6,6 +6,8 @@ HeapAlloc EQU RtlAllocateHeap
 HeapReAlloc EQU RtlReAllocateHeap
 HeapValidate EQU RtlValidateHeap
 
+DumpLongVal PROTO desc:QWORD
+
 EXTERNDEF DllHeapHandle:QWORD
 
 ENDIF

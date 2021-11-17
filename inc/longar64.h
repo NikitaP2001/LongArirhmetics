@@ -17,3 +17,5 @@ __declspec(dllimport) int MultLongVal(uint64_t dest, uint64_t op1, uint64_t op2)
 __declspec(dllimport) void DoubleToLongVal(double dval, uint64_t desc);
 
 __declspec(dllimport) void ReallocLongVal(uint64_t desc, uint64_t size);
+
+__declspec(dllimport) int BinToLongVal(uint64_t destination, char *source, uint64_t size);

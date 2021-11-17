@@ -584,7 +584,7 @@ OPTION PROLOGUE:NONE
 OPTION EPILOGUE:NONE
 
 align 16
-CmpZeroLongVal proc desc:QWORD
+CmpZeroLongVal proc desc:QWORD, p1:QWORD, p2:QWORD
 ; Dont export !
 ; Only for module-internal use
 ; Return:
@@ -595,15 +595,19 @@ CmpZeroLongVal proc desc:QWORD
         and rsp, -10h
         push rdi
         sub rsp, 28h
+        mov p1, rdx
+        mov p2, r8
         
         call GetLongvalPtr
         mov rdi, (longval ptr[rax]).val_ptr
-        mov rcx, (longval ptr[rax]).val_size
+        add rdi, p1
+        
+        mov rcx, p2
+        sub rcx, p1
+        inc rcx        
         
         xor rax, rax        
         repe scasb
-        
-        test rcx, rcx
         sete al       
 
         add rsp, 28h
@@ -652,8 +656,8 @@ CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
         
 	mov rcx, p2
 	sub rcx, p1
-	inc rcx
-	
+	inc rcx	
+        cld
 	rep movsb        	
         
 	mov rcx, dest
@@ -770,13 +774,16 @@ PartialMultLongVal proc dest:QWORD,
                 or rax, 1
                 jmp @end
                 
-@@:                
-        ;check zero case ops        
+@@:                    
         mov rcx, rdx
+        mov rdx, p1
+        mov r8, p2
         call CmpZeroLongVal
         test rax, rax 
         jne @retzero
                 mov rcx, op2
+                mov rdx, p3
+                mov r8, p4
                 call CmpZeroLongVal
                 test rax, rax
                 je @F        

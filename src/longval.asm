@@ -197,16 +197,16 @@ ReallocLongVal proc desc:QWORD, new_size:QWORD
 	mov rdx, new_size
         cmp (longval PTR [r12]).mem_size, rdx
         jae @chvalsize
-        	
-        mov (longval PTR [r12]).mem_size, rdx
-	mov rcx, DllHeapHandle
-	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
-	mov r8, (longval PTR [r12]).val_ptr
-	mov r9, new_size
-	call HeapReAlloc
-	test rax, rax
-	je @Error
-        mov (longval PTR [r12]).val_ptr, rax
+        	; Reallocate memory if news > mems
+                mov (longval PTR [r12]).mem_size, rdx
+                mov rcx, DllHeapHandle
+                mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
+                mov r8, (longval PTR [r12]).val_ptr
+                mov r9, new_size
+                call HeapReAlloc
+                test rax, rax
+                je @Error
+                mov (longval PTR [r12]).val_ptr, rax
                 
 @chvalsize:   
         mov rdx, new_size
@@ -315,8 +315,42 @@ GetLongvalPtr proc desc:QWORD
 	ret
 GetLongvalPtr endp
 
+BinToLongVal proc dest:QWORD, source:PTR BYTE, s_size:QWORD
+        push rsi
+        push rdi        
+        sub rsp, 28h
+        mov dest, rcx
+        mov source, rdx
+        mov s_size, r8
 
+        mov rdx, r8
+        call ReallocLongVal
+        test rax, rax
+        je @Error               
+        
+        mov rdi, rax
+        mov rsi, source        
+        mov rcx, s_size
+        lea rsi, [rsi+rcx-1]
+@@:     
+        dec rcx
+        js @F
+                mov al, byte ptr[rsi]
+                mov byte ptr[rdi], al
+                dec rsi
+                inc rdi
+                jmp @B
+@@:
+        or rax, 1
+        jmp @end
+@Error:
+        xor rax, rax
+@end:
 
-
+        add rsp, 28h
+        pop rdi
+        pop rsi        
+        ret
+BinToLongVal endp
 
 END
