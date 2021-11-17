@@ -4,7 +4,7 @@ include stdprocs.inc
 include longops.inc
 
 .code
-
+align 16
 UAddLongVal proc op1:QWORD, op2: QWORD
 ;	Add second operand to first, not change
 ;	sign qword BUT in case of sero result 
@@ -30,6 +30,7 @@ UAddLongVal proc op1:QWORD, op2: QWORD
 	call GetLongvalPtr
 	test rax, rax
 	je @Error
+        mov rsi, rax
 	mov r11, (longval PTR [rax]).val_size
 	;case zero size
 	test r11, r11
@@ -40,6 +41,7 @@ UAddLongVal proc op1:QWORD, op2: QWORD
 	call GetLongvalPtr
 	test rax, rax
 	je @Error
+        mov rdi, rax
 	mov r12, (longval PTR [rax]).val_size
 	;case zero size
 	test r12, r12
@@ -50,26 +52,13 @@ UAddLongVal proc op1:QWORD, op2: QWORD
 	lahf
 	mov BFlags, ah
 
-	;read op1 address
-	mov rcx, op1
-	call GetLongvalPtr
-	test rax, rax
-	je @Error
-	mov rsi, (longval PTR [rax]).val_ptr
-	;case nullptr
-	test rsi, rsi
-	je @Error
+	;read op1 address	
+	mov rsi, (longval PTR [rsi]).val_ptr
 	
 	;read op2 address
-	mov rcx, op2
-	call GetLongvalPtr
-	test rax, rax
-	je @Error
-	mov rdi, (longval PTR [rax]).val_ptr
-	;case nullptr
-	test rdi, rdi
-	je @Error
-	
+	mov rdi, (longval PTR [rdi]).val_ptr
+
+align 4	
 @do:
 	;check fisrt op for owfl
 	cmp r14, r11
@@ -717,6 +706,7 @@ ShiftLongVal proc desc:QWORD, shift:QWORD
         ret
 ShiftLongVal endp
 
+
 PartialMultLongVal proc dest:QWORD,
                         op1:QWORD,
                         op2:QWORD,
@@ -724,6 +714,7 @@ PartialMultLongVal proc dest:QWORD,
                         p2:QWORD,
                         p3:QWORD,
                         p4:QWORD
+        and rsp, -10h
 	push r14
         push r13
         push r12
@@ -735,8 +726,6 @@ PartialMultLongVal proc dest:QWORD,
 	sub rsp, 58h
         mid1 EQU qword ptr[rsp+38h]
         mid2 EQU qword ptr[rsp+40h]
-        mid3 EQU qword ptr[rsp+48h]
-        mid4 EQU qword ptr[rsp+50h]
         
 	mov dest, rcx
 	mov op1, rdx
@@ -796,7 +785,7 @@ PartialMultLongVal proc dest:QWORD,
 @@:
         
         
-        ;Try to devide op1 by half
+        ;Try to devide ops by half
         mov rax, p1
         mov mid1, rax   ;Initilize middle pointer
         mov mid2, rax
@@ -807,18 +796,6 @@ PartialMultLongVal proc dest:QWORD,
         mov mid1, rax
         inc rax
         mov mid2, rax
-        
-@@:     ;Try to devide op2 by half
-        mov rax, p3
-        mov mid3, rax    ;Initilize middle pointer
-        mov mid4, rax
-        cmp rax, p4     
-        je @F
-        add rax, p4
-        shr rax, 1
-        mov mid3, rax
-        inc rax
-        mov mid4, rax
         
 @@:
         stalloc
@@ -832,7 +809,7 @@ PartialMultLongVal proc dest:QWORD,
         mov qword ptr[rsp+20h], rax
         mov rax, p3
         mov qword ptr[rsp+28h], rax
-        mov rax, mid3
+        mov rax, mid1
         mov qword ptr[rsp+30h], rax
         call PartialMultLongVal   ; C = w * y
         
@@ -845,7 +822,7 @@ PartialMultLongVal proc dest:QWORD,
         mov r9, mid2
         mov rax, p2
         mov qword ptr[rsp+20h], rax
-        mov rax, mid4
+        mov rax, mid2
         mov qword ptr[rsp+28h], rax
         mov rax, p4
         mov qword ptr[rsp+30h], rax
@@ -875,7 +852,7 @@ PartialMultLongVal proc dest:QWORD,
         
         mov rcx, r13
         mov rdx, p3
-        mov r8, mid3
+        mov r8, mid1
         mov r9, op2
         call CutLongVal ; get y
         
@@ -883,7 +860,7 @@ PartialMultLongVal proc dest:QWORD,
         mov r14, rax
         
         mov rcx, r14
-        mov rdx, mid4
+        mov rdx, mid2
         mov r8, p4
         mov r9, op2
         call CutLongVal ; get z
@@ -895,7 +872,7 @@ PartialMultLongVal proc dest:QWORD,
         mov rcx, r14    ; dest
         mov rdx, r12    ; op1
         mov r8, r13     ; op2
-        call MultLongVal    ; (w + x) * (y + z) 
+        call MultLongValInternal    ; (w + x) * (y + z) 
         
         mov rcx, r14
         mov rdx, r10
@@ -966,34 +943,84 @@ MultLongVal proc dest:QWORD, op1:QWORD, op2: QWORD
 	mov op1, rdx
 	mov op2, r8   
         
-	;get op1 end pos
+	;get op1 ptr
         mov rcx, rdx
 	call GetLongvalPtr
 	test rax, rax
         mov r10, rax
-	je @Error
-	mov rdi, (longval ptr[r10]).val_size             
+	je @Error          
         
-        ;checl dest op
+        ;get dest ptr
         mov rcx, dest
 	call GetLongvalPtr
 	test rax, rax
         mov r11, rax
 	je @Error
         
-        ;get op2 end pos
+        ;get op2 ptr
 	mov rcx, op2
 	call GetLongvalPtr       
 	test rax, rax
 	je @Error
-	mov rsi, (longval ptr[rax]).val_size
         
         ;set destination op sign
         mov rcx, (longval ptr[r10]).val_sign
         mov rdx, (longval ptr[rax]).val_sign
         xor rcx, rdx                      
         mov r10, rcx
-        mov (longval ptr[r11]).val_sign, 0        
+        mov (longval ptr[r11]).val_sign, 0              
+       
+        mov rcx, dest
+        mov rdx, op1
+        mov r8, op2
+	call MultLongValInternal
+	test rax, rax
+	je @Error
+        
+        ;restore dest sign
+        mov (longval ptr[r11]).val_sign, r10       
+	
+	or rax, 1
+	jmp @end
+	
+@Error:
+	xor rax, rax
+
+@end:
+
+	add rsp, 40h
+        pop r11
+        pop r10
+        pop rsi
+        pop rdi
+	ret
+MultLongVal endp
+
+align 16
+MultLongValInternal proc dest:QWORD, op1:QWORD, op2: QWORD
+        and rsp, -10h
+        push rdi
+        push rsi
+        push r10
+	sub rsp, 40h
+        mov dest, rcx
+	mov op1, rdx
+	mov op2, r8   
+        
+	;get op1 end pos
+        mov rcx, rdx
+	call GetLongvalPtr
+	test rax, rax
+        mov r10, rax
+	je @Error
+	mov rdi, (longval ptr[r10]).val_size                     
+        
+        ;get op2 end pos
+	mov rcx, op2
+	call GetLongvalPtr       
+	test rax, rax
+	je @Error
+	mov rsi, (longval ptr[rax]).val_size             
         
         cmp rdi, rsi    ; make ops the same size
                 setne al
@@ -1033,10 +1060,7 @@ MultLongVal proc dest:QWORD, op1:QWORD, op2: QWORD
 	mov qword ptr[rsp+30h], rsi
 	call PartialMultLongVal
 	test rax, rax
-	je @Error
-        
-        ;restore dest sign
-        mov (longval ptr[r11]).val_sign, r10
+	je @Error        
         
         mov rcx, op1
         call CompactLongVal
@@ -1056,12 +1080,11 @@ MultLongVal proc dest:QWORD, op1:QWORD, op2: QWORD
 @end:
 
 	add rsp, 40h
-        pop r11
         pop r10
         pop rsi
         pop rdi
 	ret
-MultLongVal endp
+MultLongValInternal endp
 
 DoubleToLongVal proc dval:QWORD, desc:QWORD
         ibuf EQU dword ptr[rbp-8]
