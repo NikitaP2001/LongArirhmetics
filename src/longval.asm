@@ -64,9 +64,10 @@ AllocLongVal proc
 	mov rdi, qword ptr[rdi]
 	
 	mov (longval PTR [rdi]).val_size, VAL_DEFAULT_SIZE
+        mov (longval PTR [rdi]).mem_size, VALMEM_DEFAULT_SIZE
 	mov rcx, DllHeapHandle
 	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
-	mov r8, VAL_DEFAULT_SIZE
+	mov r8, VALMEM_DEFAULT_SIZE
 	call HeapAlloc
 	je @Error
 	mov (longval PTR [rdi]).val_ptr, rax
@@ -184,31 +185,51 @@ ReallocLongVal proc desc:QWORD, new_size:QWORD
 	push rdi
 	push r10
 	push r11
+        push r12
 	sub rsp, 28h
 	mov new_size, rdx
 	
 	call GetLongvalPtr
 	test rax, rax
 	je @Error
-	mov rdi, rax
-	
+	mov r12, rax	               
+        
 	mov rdx, new_size
-	mov (longval PTR [rdi]).val_size, rdx
+        cmp (longval PTR [r12]).mem_size, rdx
+        jae @chvalsize
+        	
+        mov (longval PTR [r12]).mem_size, rdx
 	mov rcx, DllHeapHandle
 	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
-	mov r8, (longval PTR [rdi]).val_ptr
+	mov r8, (longval PTR [r12]).val_ptr
 	mov r9, new_size
 	call HeapReAlloc
 	test rax, rax
 	je @Error
-        mov (longval PTR [rdi]).val_ptr, rax
-	
+        mov (longval PTR [r12]).val_ptr, rax
+                
+@chvalsize:   
+        mov rdx, new_size
+        cmp (longval PTR [r12]).val_size, rdx
+        jae @F
+                xor rax, rax
+                mov rdi, (longval ptr[r12]).val_ptr
+                add rdi, (longval PTR [r12]).val_size
+                mov rcx, new_size
+                sub rcx, (longval PTR [r12]).val_size
+                cld
+                rep stosb
+@@:
+	mov (longval PTR [r12]).val_size, rdx
+        
+        mov rax, (longval PTR [r12]).val_ptr
 	jmp @F
 	
 @Error:
 	xor rax, rax
 @@:
 	add rsp, 28h
+        pop r12
 	pop r11
 	pop r10
 	pop rdi

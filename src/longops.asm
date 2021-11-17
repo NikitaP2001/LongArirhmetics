@@ -580,6 +580,41 @@ UCmpLongVal proc op1:QWORD, op2:QWORD
 	ret
 UCmpLongVal endp
 
+OPTION PROLOGUE:NONE
+OPTION EPILOGUE:NONE
+
+align 16
+CmpZeroLongVal proc desc:QWORD
+; Dont export !
+; Only for module-internal use
+; Return:
+;       eax - true / false
+;-------------------------------
+        push rbp
+        mov rbp, rsp
+        and rsp, -10h
+        push rdi
+        sub rsp, 28h
+        
+        call GetLongvalPtr
+        mov rdi, (longval ptr[rax]).val_ptr
+        mov rcx, (longval ptr[rax]).val_size
+        
+        xor rax, rax        
+        repe scasb
+        
+        test rcx, rcx
+        sete al       
+
+        add rsp, 28h
+        pop rdi
+        leave
+        ret
+CmpZeroLongVal endp
+
+OPTION PROLOGUE:PrologueDef
+OPTION EPILOGUE:EpilogueDef
+
 CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
 ;	Copies part of source from p1 pos to p2 pos to
 ;	dest. Error checking must be done outside
@@ -734,8 +769,27 @@ PartialMultLongVal proc dest:QWORD,
                 
                 or rax, 1
                 jmp @end
+                
+@@:                
+        ;check zero case ops        
+        mov rcx, rdx
+        call CmpZeroLongVal
+        test rax, rax 
+        jne @retzero
+                mov rcx, op2
+                call CmpZeroLongVal
+                test rax, rax
+                je @F        
+@retzero:
+        xor rcx, rcx
+        mov rdx, dest
+        call IntToLongVal
+        or rax, 1
+        jmp @end
+@@:
         
-@@:     ;Try to devide op1 by half
+        
+        ;Try to devide op1 by half
         mov rax, p1
         mov mid1, rax   ;Initilize middle pointer
         mov mid2, rax

@@ -16,6 +16,8 @@ static void factorial(int power, uint64_t val)
         for (int i = 1; i <= power; i++) {
                 IntToLongVal(i, temp);
                 MultLongVal(val, val, temp);
+                printf("%d\n", i);
+                DumpLongVal(val);
         }
 }
 
@@ -25,7 +27,7 @@ int main(void)
         clock_t t;
 loop:        
         t = clock();
-        factorial(100, val);
+        factorial(29, val);
         
         t = clock() - t;
         printf("%f ms\n", ((float)t) / (CLOCKS_PER_SEC/1000));
@@ -33,8 +35,7 @@ loop:
         
         DumpLongVal(val);
         getchar();
-        goto loop;
-        
+        goto loop;        
 
         return 0;
 }

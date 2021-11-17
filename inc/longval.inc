@@ -6,12 +6,14 @@ HEAP_ZERO_MEMORY EQU 8
 HEAP_NO_SERIALIZE EQU 1
 
 VAL_DEFAULT_SIZE EQU 1
+VALMEM_DEFAULT_SIZE EQU 100
 lplongval TYPEDEF PTR longval
 longval STRUCT 
 	val_size 	QWORD		0
 	val_ptr		QWORD 		0
 	val_sign	QWORD		0
 	descriptor	QWORD		0
+        mem_size        QWORD           0
 longval ENDS
 
 VALSET STRUCT
@@ -37,7 +39,6 @@ CompactLongVal PROTO desc:QWORD
 ReallocLongVal PROTO desc:QWORD, new_size:QWORD
 
 GetLongvalPtr PROTO desc:QWORD
-
 
 
 ; Get preallocated longval 
