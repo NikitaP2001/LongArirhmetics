@@ -23,25 +23,24 @@ static void factorial(int power, uint64_t val)
 }
 
 int main(void)
-{	          
+{	       
+        // Take factorial
         uint64_t val = AllocLongVal();
         uint64_t val2 = AllocLongVal();
         
-        IntToLongVal(-11, val);
-        puts("val1:");
-        DumpLongVal(val);
+        // clock_t t = clock();
         
-        IntToLongVal(12, val2);
-        puts("val2:");
-        DumpLongVal(val2);
+        // factorial(10000, val);
         
-        int ans = UCmpEqualLongVal(val, val2);
-        if (ans != 0)
-                printf("equal");
-        else
-                printf("non equal");
+        // t = clock() - t;        
                 
+        // DumpLongVal(val);
+        // printf("time: %.1f sec", ((float)t) / (CLOCKS_PER_SEC / 1000));
         
+        IntToLongVal(-10, val);
+        IntToLongVal(-10, val2);
+        MultLongVal(val, val, val2);
+        DumpLongVal(val);
 
         return 0;
 }
