@@ -27,32 +27,21 @@ int main(void)
         uint64_t val = AllocLongVal();
         uint64_t val2 = AllocLongVal();
         
-// loop:        
-        // BinToLongVal(val, binval, sizeof(binval));
-        // DumpLongVal(val);
-        
-        // IntToLongVal(11, val2);
-        // DumpLongVal(val2);
-        
-        // MultLongVal(val, val, val2);
-        // DumpLongVal(val);
-        // getchar();
-        
-        // goto loop;
-        
-        
-        clock_t t;
-loop:        
-        t = clock();
-        factorial(300, val);
-        
-        t = clock() - t;
-        printf("%f ms\n", ((float)t) / (CLOCKS_PER_SEC/1000));
-        
-        
+        IntToLongVal(-11, val);
+        puts("val1:");
         DumpLongVal(val);
-        getchar();
-        goto loop;        
+        
+        IntToLongVal(12, val2);
+        puts("val2:");
+        DumpLongVal(val2);
+        
+        int ans = UCmpEqualLongVal(val, val2);
+        if (ans != 0)
+                printf("equal");
+        else
+                printf("non equal");
+                
+        
 
         return 0;
 }

@@ -23,4 +23,6 @@ MultLongVal PROTO dest:QWORD, op1:QWORD, op2: QWORD
 
 DoubleToLongVal PROTO dval:QWORD, desc:QWORD
 
+DivideLongVal PROTO result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
+
 ENDIF

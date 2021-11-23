@@ -250,7 +250,7 @@ CompactLongVal proc desc:QWORD
 	mov rbx, (longval ptr[rax]).val_size
 	add rdi, rbx
 	dec rdi
-	
+        
 @@:
 	cmp byte ptr[rdi], 0
 	jne @F

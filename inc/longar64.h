@@ -19,3 +19,8 @@ __declspec(dllimport) void DoubleToLongVal(double dval, uint64_t desc);
 __declspec(dllimport) void ReallocLongVal(uint64_t desc, uint64_t size);
 
 __declspec(dllimport) int BinToLongVal(uint64_t destination, char *source, uint64_t size);
+
+__declspec(dllimport) int DivideLongVal(uint64_t result, uint64_t reminder,
+ uint64_t op1, uint64_t op2);
+ 
+__declspec(dllimport) int UCmpEqualLongVal(uint64_t op1, uint64_t op2);

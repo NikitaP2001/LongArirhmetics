@@ -56,11 +56,10 @@ UAddLongVal proc op1:QWORD, op2: QWORD
 	mov rsi, (longval PTR [rsi]).val_ptr
 	
 	;read op2 address
-	mov rdi, (longval PTR [rdi]).val_ptr
+	mov rdi, (longval PTR [rdi]).val_ptr             
 
 align 4	
 @do:
-	;check fisrt op for owfl
 	cmp r14, r11
 	jb @if
 	inc r11
@@ -70,7 +69,6 @@ align 4
 	test rax, rax
 	je @Error
 	mov rsi, rax
-	;write zero re-ted to memory
 	add rax, r11
 	dec rax
 	mov byte ptr[rax], 0
@@ -86,7 +84,7 @@ align 4
 	mov BFlags, ah
 	jmp @endif
 	
-@elseif: ;in case of end op2
+@elseif: 
 	mov ah, BFlags
 	sahf
 	adc byte ptr[rsi + r14], 0
@@ -102,7 +100,7 @@ align 4
 	sahf
 	lahf
 	mov BFlags, ah
-	jc @do
+	jc @do        
 	
 	or rax, 1
 	jmp @F
@@ -569,6 +567,52 @@ UCmpLongVal proc op1:QWORD, op2:QWORD
 	ret
 UCmpLongVal endp
 
+UCmpEqualLongVal proc op1:QWORD, op2: QWORD
+        push r11
+        push r12
+        push rbx
+        sub rsp, 28h
+        mov r11, rcx
+        mov r12, rdx
+        
+        stalloc
+        mov rbx, rax
+        mov rcx, rax
+        mov rdx, r11
+        call MovLongVal
+        
+        mov rcx, rbx
+        mov rdx, r12                        
+        call USubLongVal
+        
+        mov rcx, rbx
+        call GetLongvalPtr
+        mov rcx, (longval ptr[rax]).val_size
+        
+        cmp rcx, 1
+        jne @False
+        
+        mov rax, (longval ptr[rax]).val_ptr
+        cmp byte ptr[rax], 0
+        jne @False
+        
+        or rax, 1
+        jmp @end
+@False:
+@Error:
+        xor rax, rax
+@end:   
+        stfree rbx
+        
+        add rsp, 28h
+        pop rbx
+        pop r12
+        pop r11
+        ret
+UCmpEqualLongVal endp
+
+
+
 OPTION PROLOGUE:NONE
 OPTION EPILOGUE:NONE
 
@@ -595,7 +639,8 @@ CmpZeroLongVal proc desc:QWORD, p1:QWORD, p2:QWORD
         sub rcx, p1
         inc rcx        
         
-        xor rax, rax        
+        xor rax, rax    
+        cld
         repe scasb
         sete al       
 
@@ -1197,6 +1242,165 @@ DoubleToLongVal proc dval:QWORD, desc:QWORD
         pop rbx
         ret
 DoubleToLongVal endp
+
+DivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
+        push rdi
+        push rsi        
+        sub rsp, 28h
+        mov result, rcx
+        mov reminder, rdx
+        mov op1, r8
+        mov op2, r9
+        
+        ; calculate result sign
+        mov rcx, op1
+        call GetLongvalPtr
+        test rax, rax
+        je @Error
+        
+        mov rsi, (longval ptr[rax]).val_sign
+        
+        mov rcx, op2
+        call GetLongvalPtr
+        test rax, rax
+        je @Error
+        
+        mov rdi, (longval ptr[rax]).val_sign
+        
+        xor rsi, rdi                
+        
+        mov rcx, result
+        mov rdx, reminder
+        mov r8, op1
+        mov r9, op2        
+        call UDivideLongVal
+        
+        ; store sign in res and reminder
+        mov rcx, result
+        call GetLongvalPtr
+        mov (longval ptr [rax]).val_sign, rsi
+        
+        mov rcx, reminder
+        call GetLongvalPtr
+        mov (longval ptr [rax]).val_sign, rsi
+        
+        or rax, 1
+        jmp @end
+@Error:        
+        xor rax, rax
+@end:        
+
+        add rsp, 28
+        pop rsi
+        pop rdi
+        ret
+DivideLongVal endp
+
+UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
+        push rsi
+        push rdi
+        push r10
+        sub rsp, 28h
+        mov result, rcx
+        mov reminder, rdx
+        mov op1, r8
+        mov op2, r9
+
+        ; A < B 
+        mov rcx, op1
+	mov rdx, op2
+	call UCmpLongVal
+	test rax, rax
+	jnz @F   ; return A as reminder
+                xor rcx, rcx
+                mov rdx, result
+                call IntToLongVal
+                
+                mov rcx, reminder
+                mov rdx, op1
+                call MovLongVal
+                
+                jmp @end        
+@@:        
+        ; calculate length of shift
+        mov rcx, op1
+        call GetLongvalPtr
+        mov rdi, (longval ptr[rax]).val_size
+        
+        mov rcx, op2
+        call GetLongvalPtr
+        mov rsi, (longval ptr[rax]).val_size
+        
+        sub rdi, rsi
+        
+        stalloc         ; B0 = B
+        mov r10, rax
+        mov rcx, rax
+        mov rdx, op2
+        call MovLongVal
+        
+        ; shift B0
+        mov rcx, r10
+        mov rdx, rdi
+        call ShiftLongVal
+        
+        ; A < B0 
+        mov rcx, op1
+	mov rdx, r10
+	call UCmpLongVal
+	test rax, rax
+	jnz @F   ; shift B by length of shift - 1
+                mov rcx, r10
+                mov rdx, op2
+                call MovLongVal                
+                dec rdi
+                mov rcx, r10
+                mov rdx, rdi
+                call ShiftLongVal                                                
+@@:            
+        
+        mov rcx, 1
+        mov rdx, result
+        call IntToLongVal
+        
+        test rdi, rdi
+        jz @F        
+                mov rcx, result
+                mov rdx, rdi
+                call ShiftLongVal
+@@:    
+                                          
+        ; A - B0
+        mov rcx, op1
+        mov rdx, r10
+        call USubLongVal
+        
+        ; r11 - sub result
+        mov rcx, r10
+        mov rdx, reminder
+        mov r8, op1
+        mov r9, op2
+        call UDivideLongVal
+        
+        mov rcx, result
+        mov rdx, r10
+        call UAddLongVal
+
+        stfree r10
+                
+        or rax, 1
+        jmp @end
+@Error:    
+        xor rax, rax
+    
+@end:        
+        add rsp, 28h
+        pop r10
+        pop rdi
+        pop rsi
+        ret
+UDivideLongVal endp
+
 
 END
 

@@ -11,4 +11,5 @@ MovLongVal
 MultLongVal
 DoubleToLongVal
 BinToLongVal
-ReallocLongVal
+DivideLongVal
+UCmpEqualLongVal
