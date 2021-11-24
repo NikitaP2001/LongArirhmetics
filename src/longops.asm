@@ -407,6 +407,10 @@ AddLongVal proc op1:QWORD, op2: QWORD
 	ret
 AddLongVal endp
 
+AddLongValByMod proc op1:QWORD, op2: QWORD, opmod:QWORD
+
+AddLongValByMod endp
+
 SubLongVal proc op1:QWORD, op2: QWORD
         push rbx
         push rsi
@@ -611,47 +615,37 @@ UCmpEqualLongVal proc op1:QWORD, op2: QWORD
         ret
 UCmpEqualLongVal endp
 
-
-
-OPTION PROLOGUE:NONE
-OPTION EPILOGUE:NONE
-
-align 16
-CmpZeroLongVal proc desc:QWORD, p1:QWORD, p2:QWORD
-; Dont export !
-; Only for module-internal use
-; Return:
-;       eax - true / false
-;-------------------------------
-        push rbp
-        mov rbp, rsp
-        and rsp, -10h
-        push rdi
+CmpEqualLongVal proc op1:QWORD, op2:QWORD
+        push r10
+        push r11
+        push rbx
         sub rsp, 28h
-        mov p1, rdx
-        mov p2, r8
+        
+        mov r10, rcx
+        mov r11, rdx
         
         call GetLongvalPtr
-        mov rdi, (longval ptr[rax]).val_ptr
-        add rdi, p1
+        mov rbx, (longval ptr[rax]).val_sign
         
-        mov rcx, p2
-        sub rcx, p1
-        inc rcx        
+        mov rcx, r11
+        call GetLongvalPtr
+        xor rbx, (longval ptr[rax]).val_sign
         
-        xor rax, rax    
-        cld
-        repe scasb
-        sete al       
-
-        add rsp, 28h
-        pop rdi
-        leave
+        test rbx, rbx
+        jnz @False
+     
+        mov rcx, r10
+        mov rdx, r11
+        call UCmpEqualLongVal
+        jmp @end
+@False:
+        xor rax, rax
+@end:        
+        pop rbx
+        pop r11
+        pop r10
         ret
-CmpZeroLongVal endp
-
-OPTION PROLOGUE:PrologueDef
-OPTION EPILOGUE:EpilogueDef
+CmpEqualLongVal endp
 
 CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
 ;	Copies part of source from p1 pos to p2 pos to
@@ -983,6 +977,9 @@ UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
         push rsi
         push rdi
         push r10
+        push r11
+        push r12
+        push r13
         sub rsp, 28h
         mov result, rcx
         mov reminder, rdx
@@ -1008,10 +1005,12 @@ UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
         ; calculate length of shift
         mov rcx, op1
         call GetLongvalPtr
+        mov r11, rax
         mov rdi, (longval ptr[rax]).val_size
         
         mov rcx, op2
         call GetLongvalPtr
+        mov r12, rax
         mov rsi, (longval ptr[rax]).val_size
         
         sub rdi, rsi
@@ -1027,6 +1026,11 @@ UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
         mov rdx, rdi
         call ShiftLongVal
         
+        mov rax, (longval ptr[r11]).val_ptr
+        mov rcx, (longval ptr[r11]).val_size
+        lea rax, [rax+rcx-1]
+        movzx r13, byte ptr[rax]
+        
         ; A < B0 
         mov rcx, op1
 	mov rdx, r10
@@ -1039,10 +1043,67 @@ UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
                 dec rdi
                 mov rcx, r10
                 mov rdx, rdi
-                call ShiftLongVal                                                
-@@:            
+                call ShiftLongVal    
+                
+                mov rax, (longval ptr[r11]).val_ptr
+                mov rcx, (longval ptr[r11]).val_size
+                lea rax, [rax+rcx-2]
+                movzx r13, byte ptr[rax+1]
+                shl r13, 8
+                mov r13b, byte ptr[rax]
+@@:        
+        ; aprocimate divide       
+        mov rax, (longval ptr[r12]).val_ptr
+        mov rcx, (longval ptr[r12]).val_size
+        lea rax, [rax+rcx-1]
+        movzx r8, byte ptr[rax]
+        inc r8
+                
+        mov rax, r13
+        xor rdx, rdx
+        div r8w
+        movzx rsi, ax
         
-        mov rcx, 1
+        stalloc
+        mov r13, rax
+        stalloc
+        mov r14, rax
+        
+        mov rcx, r13
+        mov rdx, r10
+        call MovLongVal
+        
+        mov rcx, rsi
+        mov rdx, r14
+        call IntToLongVal
+        
+        mov rcx, r13
+        mov rdx, r13
+        mov r8, r14
+        call MultLongValInternal                
+        
+        mov rcx, op1
+        mov rdx, r13
+        call USubLongVal
+        
+        stfree r13
+        stfree r14
+                
+@@:                
+        mov rcx, op1
+        mov rdx, r10
+        call UCmpLongVal
+        test rax, rax
+        jz @F
+                inc rsi
+                ; A - B0
+                mov rcx, op1
+                mov rdx, r10
+                call USubLongVal                                
+        jmp @B
+               
+@@:                   
+        mov rcx, rsi
         mov rdx, result
         call IntToLongVal
         
@@ -1051,14 +1112,8 @@ UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
                 mov rcx, result
                 mov rdx, rdi
                 call ShiftLongVal
-@@:    
-                                          
-        ; A - B0
-        mov rcx, op1
-        mov rdx, r10
-        call USubLongVal
-        
-        ; r11 - sub result
+@@:                                             
+       
         mov rcx, r10
         mov rdx, reminder
         mov r8, op1
@@ -1078,6 +1133,9 @@ UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
     
 @end:        
         add rsp, 28h
+        pop r13
+        pop r12
+        pop r11
         pop r10
         pop rdi
         pop rsi
@@ -1200,6 +1258,50 @@ MultLongValInternal proc dest:QWORD, op1:QWORD, op2:QWORD
         pop rbx
         ret
 MultLongValInternal endp
+
+LongValToPower proc desc:QWORD, power:QWORD
+        push rbx
+        push rsi
+        push rdi
+        sub rsp, 28h
+
+        mov rbx, rdx
+        mov rdi, rcx
+        
+        test rbx, rbx
+        jnz @F
+                mov rcx, 1
+                mov rdx, rdi
+                call IntToLongVal
+                jmp @end
+@@:     
+        stalloc
+        mov rsi, rax
+        mov rcx, rsi
+        mov rdx, rdi
+        call MovLongVal
+        
+        dec rbx
+@@:        
+        test rbx, rbx
+        je @end
+        dec rbx
+        
+        mov rcx, rdi
+        mov rdx, rdi
+        mov r8, rsi
+        call MultLongVal
+        
+        jmp @B
+@Error:
+        
+@end:
+        add rsp, 28h
+        pop rdi
+        pop rsi
+        pop rbx
+        ret
+LongValToPower endp
 
 END
 

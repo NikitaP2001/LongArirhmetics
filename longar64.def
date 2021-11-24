@@ -12,3 +12,5 @@ MultLongVal
 DoubleToLongVal
 BinToLongVal
 DivideLongVal
+CmpEqualLongVal
+LongValToPower

@@ -25,4 +25,6 @@ DoubleToLongVal PROTO dval:QWORD, desc:QWORD
 
 DivideLongVal PROTO result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
 
+LongValToPower PROTO desc:QWORD, power:QWORD
+
 ENDIF
