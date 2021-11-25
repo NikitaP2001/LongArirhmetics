@@ -1,3 +1,4 @@
+
 include longval.inc
 include main.inc
 include stdprocs.inc
@@ -408,8 +409,161 @@ AddLongVal proc op1:QWORD, op2: QWORD
 AddLongVal endp
 
 AddLongValByMod proc op1:QWORD, op2: QWORD, opmod:QWORD
-
+        push rsi
+        push rdi
+        push rbx
+        sub rsp, 28h
+        
+        mov rdi, rcx
+        mov rsi, rdx
+        mov rbx, r8
+        
+        call AddLongVal
+        
+        stalloc 
+        mov r10, rax
+        
+        mov rcx, r10
+        mov rdx, rdi
+        mov r8, rdi
+        mov r9, rbx
+        call DivideLongVal
+        
+        stfree r10
+@Error:        
+        add rsp, 28h
+        pop rbx
+        pop rdi
+        pop rsi
+        ret
 AddLongValByMod endp
+
+SubLongValByMod proc op1:QWORD, op2: QWORD, opmod:QWORD
+        push rsi
+        push rdi
+        push rbx
+        sub rsp, 28h
+        
+        mov rdi, rcx
+        mov rsi, rdx
+        mov rbx, r8
+        
+        call SubLongVal
+        
+        stalloc 
+        mov r10, rax
+        
+        mov rcx, r10
+        mov rdx, rdi
+        mov r8, rdi
+        mov r9, rbx
+        call DivideLongVal
+        
+        stfree r10
+@Error:        
+        add rsp, 28h
+        pop rbx
+        pop rdi
+        pop rsi
+        ret
+SubLongValByMod endp
+
+MultLongValByMod proc op1:QWORD, op2: QWORD, opmod:QWORD
+        push rsi
+        push rdi
+        push rbx
+        sub rsp, 28h
+        
+        mov rdi, rcx
+        mov rsi, rdx
+        mov rbx, r8
+        
+        mov r8, rcx              
+        call MultLongVal
+        
+        stalloc 
+        mov r10, rax
+        
+        mov rcx, r10
+        mov rdx, rdi
+        mov r8, rdi
+        mov r9, rbx
+        call DivideLongVal
+        
+        stfree r10
+@Error:        
+        add rsp, 28h
+        pop rbx
+        pop rdi
+        pop rsi
+        ret
+MultLongValByMod endp
+
+DivLongValByMod proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD, opmod:QWORD
+        push rsi
+        push rdi
+        push rbx
+        sub rsp, 28h        
+        
+        mov rdi, rcx
+        mov rsi, rdx
+        mov rbx, opmod
+                             
+        call DivideLongVal
+        
+        stalloc 
+        mov r10, rax
+        
+        mov rcx, r10
+        mov rdx, rdi
+        mov r8, rdi
+        mov r9, rbx
+        call DivideLongVal
+        
+        mov rcx, r10
+        mov rdx, rsi
+        mov r8, rsi
+        mov r9, rbx
+        call DivideLongVal
+        
+        stfree r10
+@Error:        
+        add rsp, 28h
+        pop rbx
+        pop rdi
+        pop rsi
+        ret
+DivLongValByMod endp
+
+LongValToPowerByMod proc desc:QWORD, power:QWORD, module:QWORD
+        push rbx
+        push rdi
+        push r10
+        sub rsp, 28h
+
+        mov rdi, rcx
+        mov rbx, r8
+
+        call LongValToPower
+        
+        stalloc 
+        mov r10, rax
+        
+        mov rcx, r10
+        mov rdx, rdi
+        mov r8, rdi
+        mov r9, rbx
+        call DivideLongVal
+        
+        stfree r10
+@Error:       
+        
+        add rsp, 28h
+        pop r10
+        pop rdi
+        pop rbx
+        ret
+LongValToPowerByMod endp
 
 SubLongVal proc op1:QWORD, op2: QWORD
         push rbx
@@ -967,7 +1121,7 @@ DivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
         xor rax, rax
 @end:        
 
-        add rsp, 28
+        add rsp, 28h
         pop rsi
         pop rdi
         ret
@@ -1302,6 +1456,186 @@ LongValToPower proc desc:QWORD, power:QWORD
         pop rbx
         ret
 LongValToPower endp
+
+LongValSquareRoot proc result:QWORD, operand:QWORD
+lvquotient      EQU qword ptr[rbp-10h]
+lvreminder      EQU qword ptr[rbp-18h]
+lvselling       EQU qword ptr[rbp-20h]
+lvfloor         EQU qword ptr[rbp-28h]
+lvdivisor       EQU qword ptr[rbp-30h]
+        push r10
+        sub rsp, 58h
+        mov result, rcx
+        mov operand, rdx
+
+        stalloc 
+        mov lvselling, rax
+        
+        mov rcx, rax
+        mov rdx, operand
+        call MovLongVal
+        
+        stalloc
+        mov lvfloor, rax
+        xor rcx, rcx
+        mov rdx, rax
+        call IntToLongVal        
+        
+        stalloc
+        mov lvquotient, rax
+        stalloc
+        mov lvreminder, rax
+        
+        ; 2 for divisor
+        stalloc
+        mov lvdivisor, rax
+        mov rcx, 2
+        mov rdx, rax
+        call IntToLongVal
+        
+        mov rcx, lvquotient
+        mov rdx, lvselling
+        call MovLongVal
+        
+        stalloc
+        mov r10, rax
+@@:     
+
+        mov rcx, lvquotient
+        mov rdx, operand
+        call checksquareroot
+        test rax, rax
+        jne @end  
+
+        mov rcx, r10
+        mov rdx, lvselling
+        call MovLongVal
+        
+        mov rcx, r10
+        mov rdx, lvfloor
+        call UAddLongVal     
+
+        mov rcx, lvquotient
+        mov rdx, lvreminder
+        mov r8, r10
+        mov r9, lvdivisor
+        call DivLongValByMod                    
+        
+        mov rcx, r10
+        mov rdx, lvquotient
+        call MovLongVal
+        
+        mov rcx, r10
+        mov rdx, 2
+        call LongValToPower        
+        
+        mov rcx, operand
+        mov rdx, r10
+        call UCmpLongVal
+        test rax, rax
+        jne @smaller
+                
+                mov rcx, lvselling
+                mov rdx, lvquotient                        
+                call MovLongVal
+                jmp @B
+@smaller:        
+                mov rcx, lvfloor
+                mov rdx, lvquotient
+                call MovLongVal
+                jmp @B
+        
+@Error:
+@end:
+        mov rcx, result
+        mov rdx, lvquotient
+        call MovLongVal
+        
+        mov rax, lvquotient
+        stfree rax
+        mov rax, lvdivisor
+        stfree rax
+        mov rax, lvreminder
+        stfree rax
+        mov rax, lvselling
+        stfree rax
+        mov rax, lvfloor
+        stfree rax
+        stfree r10
+        
+        add rsp, 58h
+        pop r10
+        ret
+LongValSquareRoot endp
+
+checksquareroot proc root:QWORD, xval:QWORD        
+        push rbx
+        push r10
+        push r11
+        push r12
+        sub rsp, 28h
+        
+        mov rbx, rcx
+        mov r10, rdx
+        
+        stalloc
+        mov r11, rax
+        
+        stalloc
+        mov r12, rax
+        
+        mov rcx, r11
+        mov rdx, rbx
+        call MovLongVal
+        
+        mov rcx, r11
+        mov rdx, 2
+        call LongValToPower
+        
+        mov rcx, r10
+        mov rdx, r11
+        call UCmpLongVal
+        test rax, rax
+        je @False
+        
+        mov rcx, r11
+        mov rdx, rbx
+        call MovLongVal        
+        
+        mov rcx, 1
+        mov rdx, r12
+        call IntToLongVal
+        
+        mov rcx, r11
+        mov rdx, r12
+        call UAddLongVal
+        
+        mov rcx, r11
+        mov rdx, 2
+        call LongValToPower
+        
+        mov rcx, r10
+        mov rdx, r11
+        call UCmpLongVal
+        test rax, rax
+        jne @False
+        
+        or rax, 1
+        jmp @end
+@Error:        
+@False:
+        xor rax, rax
+@end:    
+        stfree r11
+        stfree r12
+    
+        add rsp, 28h
+        pop r12
+        pop r11
+        pop r10
+        pop rbx
+        ret
+checksquareroot endp        
 
 END
 

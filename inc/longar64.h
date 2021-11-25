@@ -26,3 +26,20 @@ __declspec(dllimport) int DivideLongVal(uint64_t result, uint64_t reminder,
 __declspec(dllimport) int CmpEqualLongVal(uint64_t op1, uint64_t op2);
 
 __declspec(dllimport) void LongValToPower(uint64_t desc, uint64_t power);
+
+__declspec(dllimport) void AddLongValByMod(uint64_t op1_desc, uint64_t op2_desc,
+uint64_t module);
+
+__declspec(dllimport) void SubLongValByMod(uint64_t op1_desc, uint64_t op2_desc,
+uint64_t module);
+
+__declspec(dllimport) void MultLongValByMod(uint64_t op1_desc, uint64_t op2_desc,
+uint64_t module);
+
+__declspec(dllimport) void DivLongValByMod(uint64_t result, uint64_t reminder, 
+uint64_t op1, uint64_t op2, uint64_t module);
+
+__declspec(dllimport) void LongValToPowerByMod(uint64_t desc, uint64_t power,
+uint64_t module);
+
+__declspec(dllimport) void LongValSquareRoot(uint64_t result, uint64_t operant);

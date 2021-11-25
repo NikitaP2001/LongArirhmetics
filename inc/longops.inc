@@ -27,4 +27,16 @@ DivideLongVal PROTO result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
 
 LongValToPower PROTO desc:QWORD, power:QWORD
 
+AddLongValByMod PROTO op1:QWORD, op2: QWORD, opmod:QWORD
+
+SubLongValByMod PROTO op1:QWORD, op2: QWORD, opmod:QWORD
+
+MultLongValByMod PROTO op1:QWORD, op2: QWORD, opmod:QWORD
+
+DivLongValByMod PROTO result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD, opmod:QWORD
+
+LongValToPowerByMod PROTO desc:QWORD, power:QWORD, module:QWORD
+
+LongValSquareRoot PROTO result:QWORD, operand:QWORD
+
 ENDIF

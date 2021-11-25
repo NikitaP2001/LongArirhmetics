@@ -14,3 +14,9 @@ BinToLongVal
 DivideLongVal
 CmpEqualLongVal
 LongValToPower
+AddLongValByMod
+SubLongValByMod
+MultLongValByMod
+DivLongValByMod
+LongValToPowerByMod
+LongValSquareRoot
