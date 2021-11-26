@@ -40,6 +40,16 @@ int main(void)
         uint64_t val = AllocLongVal();
         uint64_t val2 = AllocLongVal();      
 
+
+
+        // GCDtest
+        WaitForConsoleInput();
+        IntToLongVal(3, val);
+        IntToLongVal(7, val2);
+        ExtendedGCD(val, val2, result);               
+        DumpLongVal(result); 
+
+
         // Square root
         puts("Square root");
         WaitForConsoleInput();
@@ -52,7 +62,7 @@ int main(void)
         WaitForConsoleInput();                    
         IntToLongVal(65456, val);
         clock_t t = clock();       
-        LongValToPower(val, 1234);       
+        LongValToPower(val, 1200);       
         t = clock() - t;        
                 
         DumpLongVal(val);        
