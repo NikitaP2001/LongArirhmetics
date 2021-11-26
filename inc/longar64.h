@@ -43,5 +43,3 @@ __declspec(dllimport) void LongValToPowerByMod(uint64_t desc, uint64_t power,
 uint64_t module);
 
 __declspec(dllimport) void LongValSquareRoot(uint64_t result, uint64_t operant);
-
-__declspec(dllimport) void ExtendedGCD(uint64_t op1, uint64_t op2, uint64_t res);

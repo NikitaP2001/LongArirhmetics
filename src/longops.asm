@@ -1657,7 +1657,7 @@ checksquareroot proc root:QWORD, xval:QWORD
         ret
 checksquareroot endp    
 
-ExtendedGCD proc aval:QWORD, bval:QWORD, xcoff:QWORD
+InverseByMult proc aval:QWORD, bval:QWORD, xcoff:QWORD
 lvold_r         EQU     qword ptr[rbp-10h]
 lvold_s         EQU     qword ptr[rbp-18h]
 lvold_t         EQU     qword ptr[rbp-20h]
@@ -1811,7 +1811,7 @@ lvmult          EQU     qword ptr[rbp-58h]
         stfree rax
         add rsp, 80h
         ret
-ExtendedGCD endp
+InverseByMult endp
 
 SolveCongruences proc psys:PTR QWORD
 
