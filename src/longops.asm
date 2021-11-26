@@ -1,7 +1,3 @@
-
-include msvcrt.inc
-includelib msvcrt.lib
-
 include longval.inc
 include main.inc
 include stdprocs.inc
@@ -657,7 +653,7 @@ XchgLongVal endp
 MovLongVal proc dest:QWORD, source: QWORD
         push r10
         push r11
-	sub rsp, 28h
+	sub rsp, 30h
 	mov dest, rcx
 	mov source, rdx
 	
@@ -694,7 +690,7 @@ MovLongVal proc dest:QWORD, source: QWORD
 	xor rax, rax
 	
 @end:           
-	add rsp, 28h
+	add rsp, 30h
         pop r11
         pop r10
 	ret
