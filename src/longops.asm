@@ -819,6 +819,9 @@ CmpLowerLongVal proc op1:QWORD, op2: QWORD
         push r11
         sub rsp, 30h
         
+        mov op1, rcx
+        mov op2, rdx
+        
         call GetLongvalPtr
         mov r10, rax
         
@@ -1847,7 +1850,7 @@ lvmult          EQU     qword ptr[rbp-58h]
 @@:       
         mov rcx, xcoff
         mov rdx, lvold_s
-        call MovLongVal            
+        call MovLongVal 
         mov rcx, xcoff
         mov rdx, lvzero
         call CmpLowerLongVal

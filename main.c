@@ -39,7 +39,7 @@ int main(void)
         uint64_t module = AllocLongVal();
         uint64_t val = AllocLongVal();
         uint64_t val2 = AllocLongVal();      
-
+        
         // Congruences
         puts("Solve congruences");
         WaitForConsoleInput();
