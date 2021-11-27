@@ -1903,7 +1903,7 @@ reminder        EQU qword ptr[rbp-40h]
         mov rcx, DllHeapHandle
 	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
         mov r8, count
-        shr r8, 3
+        shl r8, 3
         call HeapAlloc
         mov lvvecMi, rax
 
@@ -1918,27 +1918,26 @@ reminder        EQU qword ptr[rbp-40h]
         mov rcx, 1
         mov rdx, lvM
         call IntToLongVal
-
+        
         ; calculate M and preallocate longvals for Mi-s
         mov rbx, count
         mov rdi, psys
         mov r10, lvvecMi
-@@:
-               
+@@:     
                 mov rcx, lvM
                 mov rdx, lvM
                 mov r8, qword ptr[rdi+8h]
-                call MultLongVal
-                
+                call MultLongVal                 
+
                 ; allocate for Mi
                 call AllocLongVal
-                mov qword ptr[r10], rax
+                mov qword ptr[r10], rax                                                
                 
                 add r10, 8h
                 add rdi, 10h
                 dec rbx
-                jne @B
-            
+                jne @B      
+        
         ; calculate Mi-s
         mov rbx, count
         mov rdi, lvvecMi
@@ -2004,7 +2003,7 @@ reminder        EQU qword ptr[rbp-40h]
         mov rax, lvM
         stfree rax
         mov rax, reminder
-        stfree rax
+        stfree rax    
         
         mov rbx, count
         mov rdi, lvvecMi
@@ -2015,7 +2014,7 @@ reminder        EQU qword ptr[rbp-40h]
                 add rdi, 8
                 dec rbx
                 jne @B
-        
+                
         mov rcx, DllHeapHandle
 	xor rdx, rdx
         mov r8, lvvecMi
