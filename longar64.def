@@ -20,3 +20,6 @@ MultLongValByMod
 DivLongValByMod
 LongValToPowerByMod
 LongValSquareRoot
+SolveCongruences
+CmpLowerLongVal
+InverseByMult

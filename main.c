@@ -40,6 +40,27 @@ int main(void)
         uint64_t val = AllocLongVal();
         uint64_t val2 = AllocLongVal();      
 
+        // Congruences
+        puts("Solve congruences");
+        WaitForConsoleInput();
+        int count;
+        scanf("%d", &count);
+        uint64_t *congr = calloc(sizeof(uint64_t), count * 2);
+        for (int i = 0; i < count; i++) {
+                int r, a;
+                scanf("%d %d", &r, &a);
+                congr[i*2] = AllocLongVal();
+                IntToLongVal(r, congr[i*2]);
+                congr[i*2+1] = AllocLongVal();
+                IntToLongVal(a, congr[i*2+1]);
+        }
+        SolveCongruences(result, congr, count);
+        DumpLongVal(result);
+        for (int i = 0; i < count; i++) {
+                FreeLongVal(congr[i*2]);                
+                FreeLongVal(congr[i*2+1]);               
+        }
+        
 
         // Square root
         puts("Square root");

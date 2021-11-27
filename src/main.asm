@@ -96,6 +96,7 @@ DumpLongVal proc desc:QWORD
 	push rdi
 	push rbx
 	push rsi
+        push r10
 	sub rsp, 28h
 	
 	call GetLongvalPtr
@@ -149,6 +150,7 @@ DumpLongVal proc desc:QWORD
 	call crt_putchar
 	
 	add rsp, 28h
+        pop r10
 	pop rsi
 	pop rbx
 	pop rdi

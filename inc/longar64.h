@@ -43,3 +43,9 @@ __declspec(dllimport) void LongValToPowerByMod(uint64_t desc, uint64_t power,
 uint64_t module);
 
 __declspec(dllimport) void LongValSquareRoot(uint64_t result, uint64_t operant);
+
+__declspec(dllimport) void SolveCongruences(uint64_t result, uint64_t *psys, uint64_t count);
+
+__declspec(dllimport) int CmpLowerLongVal(uint64_t op1, uint64_t op2);
+
+__declspec(dllimport) void InverseByMult(uint64_t aval, uint64_t bval, uint64_t xcoff);

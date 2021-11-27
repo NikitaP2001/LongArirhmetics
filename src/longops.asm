@@ -1,3 +1,8 @@
+include ntdll.inc
+includelib ntdll.lib
+include kernel32.inc
+includelib kernel32.lib
+
 include longval.inc
 include main.inc
 include stdprocs.inc
@@ -678,10 +683,8 @@ MovLongVal proc dest:QWORD, source: QWORD
 	call CutLongVal
         
         ; mov sign
-        mov rax, (longval ptr[r10]).val_sign
-        mov rcx, (longval ptr[r11]).val_sign
-        mov (longval ptr[r10]).val_sign, rcx
-        mov (longval ptr[r11]).val_sign, rax
+        mov rax, (longval ptr[r11]).val_sign
+        mov (longval ptr[r10]).val_sign, rax
 
 	or rax, 1
 	jmp @end
@@ -739,17 +742,17 @@ UCmpEqualLongVal proc op1:QWORD, op2: QWORD
         push rbx
         sub rsp, 28h
         mov r11, rcx
-        mov r12, rdx
+        mov r12, rdx        
         
         stalloc
         mov rbx, rax
         mov rcx, rax
         mov rdx, r11
-        call MovLongVal
+        call MovLongVal       
         
         mov rcx, rbx
         mov rdx, r12                        
-        call USubLongVal
+        call USubLongVal       
         
         mov rcx, rbx
         call GetLongvalPtr
@@ -798,16 +801,74 @@ CmpEqualLongVal proc op1:QWORD, op2:QWORD
      
         mov rcx, r10
         mov rdx, r11
-        call UCmpEqualLongVal
+        call UCmpEqualLongVal       
+        
         jmp @end
 @False:
         xor rax, rax
 @end:        
+        add rsp, 28h
         pop rbx
         pop r11
         pop r10
         ret
 CmpEqualLongVal endp
+
+CmpLowerLongVal proc op1:QWORD, op2: QWORD
+        push r10
+        push r11
+        sub rsp, 30h
+        
+        call GetLongvalPtr
+        mov r10, rax
+        
+        mov rcx, op2
+        call GetLongvalPtr
+        mov r11, rax
+        
+        mov rcx, (longval ptr[r10]).val_sign
+        mov rdx, (longval ptr[r11]).val_sign
+        cmp rcx, 1
+        je @F
+                cmp rdx, 1
+                je @1
+                        ; both be zero
+                        mov rcx, op1
+                        mov rdx, op2
+                        call UCmpLongVal
+                        test rax, rax
+                        sete cl
+                        movzx rax, cl
+                        jmp @end                
+        @1:
+                        ; op1 >= 0 op2 < 0
+                        jmp @False
+@@:     
+                cmp rdx, 1
+                je @2
+                        ; op1 < 0 op2 >= 0
+                        jmp @True
+        @2:        
+                        ; op1 < 0 op2 < 0
+                        mov rcx, op2
+                        mov rdx, op1
+                        call UCmpLongVal
+                        test rax, rax
+                        sete cl
+                        movzx rax, cl
+                        jmp @end       
+@False:
+        xor rax, rax
+        jmp @end
+@True:        
+        or rax, 1
+        jmp @end
+@end:
+        add rsp, 30h
+        pop r11
+        pop r10
+        ret
+CmpLowerLongVal endp
 
 CutLongVal proc dest:QWORD, p1:QWORD, p2:QWORD, source:QWORD
 ;	Copies part of source from p1 pos to p2 pos to
@@ -1702,7 +1763,7 @@ lvmult          EQU     qword ptr[rbp-58h]
         call MovLongVal
         mov rcx, lvr
         mov rdx, bval
-        call MovLongVal        
+        call MovLongVal                
         
         mov rcx, 1
         mov rdx, lvold_s
@@ -1717,19 +1778,19 @@ lvmult          EQU     qword ptr[rbp-58h]
         mov rcx, 1
         mov rdx, lvt
         call IntToLongVal               
-@@:
+@@:        
 
         mov rcx, lvr
         mov rdx, lvzero
         call CmpEqualLongVal
         test rax, rax
-        jne @F
+        jne @F      
         
                 mov rcx, lvquotient
                 mov rdx, lvprov
                 mov r8, lvold_r
                 mov r9, lvr
-                call DivideLongVal                   
+                call DivideLongVal 
                 
                 mov rcx, lvprov
                 mov rdx,  lvr
@@ -1763,7 +1824,7 @@ lvmult          EQU     qword ptr[rbp-58h]
                 call MovLongVal
                 mov rcx, lvold_s
                 mov rdx, lvprov
-                call MovLongVal
+                call MovLongVal               
                 
                 mov rcx, lvprov
                 mov rdx,  lvt
@@ -1786,9 +1847,17 @@ lvmult          EQU     qword ptr[rbp-58h]
 @@:       
         mov rcx, xcoff
         mov rdx, lvold_s
-        call MovLongVal               
-        
+        call MovLongVal            
+        mov rcx, xcoff
+        mov rdx, lvzero
+        call CmpLowerLongVal
+        test rax, rax
+        jz @end
+                mov rcx, xcoff
+                mov rdx, bval
+                call AddLongVal        
 @Error:  
+@end:
         mov rax, lvold_r
         stfree rax
         mov rax, lvold_s
@@ -1813,8 +1882,147 @@ lvmult          EQU     qword ptr[rbp-58h]
         ret
 InverseByMult endp
 
-SolveCongruences proc psys:PTR QWORD
+SolveCongruences proc result:QWORD, psys:PTR QWORD, count:QWORD
+lvvecMi         EQU qword ptr[rbp-28h]
+temp            EQU qword ptr[rbp-30h]
+lvM             EQU qword ptr[rbp-38h]
+reminder        EQU qword ptr[rbp-40h]
+        push rbx
+        push rsi
+        push rdi
+        push r10
+        sub rsp, 60h
+        mov result, rcx
+        mov psys, rdx
+        mov count, r8
 
+        ; for Mi vector
+        mov rcx, DllHeapHandle
+	mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
+        mov r8, count
+        shr r8, 3
+        call HeapAlloc
+        mov lvvecMi, rax
+
+        stalloc
+        mov reminder, rax
+        stalloc
+        mov temp, rax
+        ; for m - value
+        stalloc
+        mov lvM, rax
+        
+        mov rcx, 1
+        mov rdx, lvM
+        call IntToLongVal
+
+        ; calculate M and preallocate longvals for Mi-s
+        mov rbx, count
+        mov rdi, psys
+        mov r10, lvvecMi
+@@:
+               
+                mov rcx, lvM
+                mov rdx, lvM
+                mov r8, qword ptr[rdi+8h]
+                call MultLongVal
+                
+                ; allocate for Mi
+                call AllocLongVal
+                mov qword ptr[r10], rax
+                
+                add r10, 8h
+                add rdi, 10h
+                dec rbx
+                jne @B
+            
+        ; calculate Mi-s
+        mov rbx, count
+        mov rdi, lvvecMi
+        mov rsi, psys
+@@:
+                mov rcx, qword ptr[rdi]
+                mov rdx, temp
+                mov r8, lvM
+                mov r9, qword ptr[rsi+8h]
+                call DivideLongVal
+                add rsi, 10h
+                add rdi, 8h
+                dec rbx
+                jne @B
+                
+        xor rcx, rcx
+        mov rdx, result
+        call IntToLongVal
+        
+        ; finally calculate x
+        mov rbx, count
+        mov rsi, lvvecMi
+        mov r10, psys
+@@:             
+                
+                mov rcx, qword ptr[rsi]    ; Mi
+                mov rdx, qword ptr[r10+8h] ; by mod ai
+                mov r8, temp
+                call InverseByMult                 
+
+                mov rcx, temp
+                mov rdx, qword ptr[rsi]
+                mov r8, temp
+                call MultLongVal
+                
+                mov rcx, temp
+                mov rdx, qword ptr[r10]
+                mov r8, temp
+                call MultLongVal
+                
+                mov rcx, result
+                mov rdx, temp
+                call AddLongVal                
+                
+                add r10, 10h
+                add rsi, 8h
+                dec rbx
+                jne @B
+        
+        mov rcx, temp
+        mov rdx, reminder
+        mov r8, result
+        mov r9, lvM
+        call DivideLongVal
+        mov rcx, result
+        mov rdx, reminder
+        call MovLongVal
+        
+@Error:
+@end:        
+        mov rax, temp
+        stfree rax
+        mov rax, lvM
+        stfree rax
+        mov rax, reminder
+        stfree rax
+        
+        mov rbx, count
+        mov rdi, lvvecMi
+@@:        
+                mov rcx, qword ptr[rdi]                
+                call FreeLongVal
+                
+                add rdi, 8
+                dec rbx
+                jne @B
+        
+        mov rcx, DllHeapHandle
+	xor rdx, rdx
+        mov r8, lvvecMi
+        call HeapFree
+
+        add rsp, 60h
+        pop r10
+        pop rdi
+        pop rsi
+        pop rbx
         ret
 SolveCongruences endp
 

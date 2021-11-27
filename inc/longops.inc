@@ -39,4 +39,6 @@ LongValToPowerByMod PROTO desc:QWORD, power:QWORD, module:QWORD
 
 LongValSquareRoot PROTO result:QWORD, operand:QWORD
 
+SolveCongruences PROTO result:QWORD, psys:PTR QWORD, count:QWORD
+
 ENDIF
