@@ -52,10 +52,16 @@ DllMain proc hInstDll:QWORD, reason:QWORD, unused:QWORD
 		call ExitProcess
 		jmp @endif
 @@:	
-		mov (VALSET PTR global_set).val_array, rax                
+		mov (VALSET PTR global_set).val_array, rax   
+
+                mov rcx, DllHeapHandle
+                mov rdx, HEAP_GENERATE_EXCEPTIONS + HEAP_ZERO_MEMORY + HEAP_NO_SERIALIZE
+                mov r8, StashSize * SIZEOF VALREG
+                call HeapAlloc
+                mov ValStash, rax
                 
                 mov r10, StashSize              
-                mov rbx, OFFSET ValStash
+                mov rbx, ValStash
         @for:  
                         call AllocLongVal
                         mov (VALREG ptr [rbx]).descriptor, rax

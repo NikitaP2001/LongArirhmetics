@@ -27,7 +27,7 @@ VALREG STRUCT
         IsFree          QWORD   0
 VALREG ENDS
 
-EXTERNDEF ValStash:VALREG
+EXTERNDEF ValStash:QWORD
 StashSize = 1000
 
 AllocLongVal	PROTO	
@@ -54,7 +54,7 @@ LOCAL @endf
         push rdi
         push rcx
         mov rcx, StashSize               
-        mov rdi, OFFSET ValStash
+        mov rdi, ValStash
 @for:                  
                 cmp (VALREG ptr [rdi]).IsFree, 0    
                 je @endf
@@ -78,7 +78,7 @@ LOCAL @endf
         push rbx
         mov rbx, desc
         mov rcx, StashSize               
-        mov rdi, OFFSET ValStash
+        mov rdi, ValStash
 @for:                  
                 cmp (VALREG ptr [rdi]).descriptor, rbx   
                 je @endf

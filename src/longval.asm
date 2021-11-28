@@ -8,7 +8,7 @@ include main.inc
 
 .data
 global_set VALSET <0, 0>
-ValStash VALREG StashSize DUP(<>)
+ValStash QWORD 0
 
 .code
 
