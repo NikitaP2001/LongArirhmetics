@@ -354,4 +354,60 @@ BinToLongVal proc dest:QWORD, source:PTR BYTE, s_size:QWORD
         ret
 BinToLongVal endp
 
+LongValToBin proc source:QWORD, dest:PTR BYTE, dest_size:QWORD
+;       Writes long val to given array
+;       Returns: long val sign on success
+;               -1 on failture
+;---------------------------------
+        push rsi
+        push rdi
+        sub rsp, 28h
+        mov source, rcx
+        mov dest, rdx
+        mov dest_size, r8
+        
+        call GetLongvalPtr
+        
+        mov rbx, dest_size
+        test rbx, rbx
+        je @Error
+        
+                mov rsi, (longval ptr[rax]).val_ptr                
+                mov rdi, dest
+                lea rdi, [rdi+rbx-1]                
+@@:
+                        cld
+                        lodsb byte ptr[rsi]
+                        std
+                        stosb byte ptr[rdi]
+                        
+                        dec rbx
+                        jne @B
+        mov rax, dest_size        
+        jmp @end
+@Error:
+        xor rax, rax
+        not rax
+
+@end:
+
+        add rsp, 28h
+        pop rdi
+        pop rsi
+        ret
+LongValToBin endp
+
+GetLongValSize proc source:QWORD
+        sub rsp, 28h
+        
+        call GetLongvalPtr
+        test rax, rax
+        je @Error
+        mov rax, (longval ptr[rax]).val_size
+@Error:
+@end:        
+        add rsp, 28h
+        ret
+GetLongValSize endp
+
 END

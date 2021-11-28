@@ -42,6 +42,9 @@ GetLongvalPtr PROTO desc:QWORD
 
 BinToLongVal PROTO dest:QWORD, source:PTR BYTE, s_size:QWORD
 
+LongValToBin PROTO source:QWORD, dest:PTR BYTE, dest_size:QWORD
+
+GetLongValSize PROTO source:QWORD
 
 ; Get preallocated longval 
 stalloc MACRO

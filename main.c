@@ -32,34 +32,101 @@ static void WaitForConsoleInput()
         putchar('\n');
 }
 
+int DumpLongVal(uint64_t long_val, int base)
+{
+        char *buf;
+        int sign, size;
+        if (base != 10 && base != 16) {
+                puts("Wrong base: can be 16 or 10 inly");
+                return 0;
+        }
+        
+        size = GetLongValSize(long_val);
+        
+        if (size == 0) {
+                puts("Dump error: wrong longval descriptor");       
+                return 0;
+        }        
+        
+        if (sign == 1)
+                putchar('-');
+        
+        if (base == 16) {
+                buf = (char*)malloc(size);
+        
+                if ((sign = LongValToBin(long_val, buf, size)) == -1) {
+                        puts("Inpossible to convert");
+                        return 0;
+                }
+                
+                for (int i = 0; i < size; i++) {
+                        printf("%02hx", (unsigned char)buf[i]);
+                }
+                
+        } else {
+                uint64_t divider = AllocLongVal();
+                uint64_t quotient = AllocLongVal();
+                uint64_t reminder = AllocLongVal();
+                uint64_t divident = AllocLongVal();
+                uint64_t lvzero = AllocLongVal();
+                int length;
+                
+                IntToLongVal(0, lvzero);
+                IntToLongVal(10, divider);
+                MovLongVal(divident, long_val);
+                
+                buf = malloc(size*4);
+                memset(buf, 0, size*4);
+                
+                if (CmpEqualLongVal(lvzero, divident))
+                        length = 1;
+                else 
+                        length = 0;
+                
+                while (!CmpEqualLongVal(lvzero, divident)) {                        
+                        DivideLongVal(quotient, reminder, divident, divider);                        
+                        LongValToBin(reminder, &buf[length++ - 1], 1);
+                        MovLongVal(divident, quotient);
+                }                
+                               
+                for (int i = length - 1; i >= 0; i--) {
+                        printf("%hhu", (unsigned char)buf[i]);
+                }
+                return 0;
+        }
+        putchar('\n');
+        
+        return 1;
+}
+
 int main(void)
 {	       
         uint64_t result = AllocLongVal();
         uint64_t reminder = AllocLongVal();
         uint64_t module = AllocLongVal();
         uint64_t val = AllocLongVal();
-        uint64_t val2 = AllocLongVal();      
+        uint64_t val2 = AllocLongVal();                      
         
         // Congruences
-        puts("Solve congruences");
-        WaitForConsoleInput();
-        int count;
-        scanf("%d", &count);
-        uint64_t *congr = calloc(sizeof(uint64_t), count * 2);
-        for (int i = 0; i < count; i++) {
-                int r, a;
-                scanf("%d %d", &r, &a);
-                congr[i*2] = AllocLongVal();
-                IntToLongVal(r, congr[i*2]);
-                congr[i*2+1] = AllocLongVal();
-                IntToLongVal(a, congr[i*2+1]);
-        }
-        SolveCongruences(result, congr, count);
-        DumpLongVal(result);
-        for (int i = 0; i < count; i++) {
-                FreeLongVal(congr[i*2]);                
-                FreeLongVal(congr[i*2+1]);               
-        }
+        // puts("Solve congruences");
+        // WaitForConsoleInput();
+        // int count;
+        // scanf("%d", &count);
+        // uint64_t *congr = calloc(sizeof(uint64_t), count * 2);
+        // for (int i = 0; i < count; i++) {
+                // int r, a;
+                // scanf("%d %d", &r, &a);
+                // congr[i*2] = AllocLongVal();
+                // IntToLongVal(r, congr[i*2]);
+                // congr[i*2+1] = AllocLongVal();
+                // IntToLongVal(a, congr[i*2+1]);
+        // }
+        // SolveCongruences(result, congr, count);
+        // DumpLongVal(result, 16);
+        // for (int i = 0; i < count; i++) {
+                // FreeLongVal(congr[i*2]);                
+                // FreeLongVal(congr[i*2+1]);               
+        // }
         
 
         // Square root
@@ -67,7 +134,7 @@ int main(void)
         WaitForConsoleInput();
         IntToLongVal(123456, val);
         LongValSquareRoot(result, val);               
-        DumpLongVal(result);  
+        DumpLongVal(result, 10);  
 
         // Power
         puts("65456 to power 1234");
@@ -77,7 +144,7 @@ int main(void)
         LongValToPower(val, 1200);       
         t = clock() - t;        
                 
-        DumpLongVal(val);        
+        DumpLongVal(val, 16);        
         printf("time: %.1f sec\n", ((float)t) / (CLOCKS_PER_SEC / 1000));        
         
         // Cmpare
@@ -91,12 +158,12 @@ int main(void)
         // Divide
         puts("Division");
         WaitForConsoleInput();
-        DumpLongVal(val);
+        DumpLongVal(val, 16);
         IntToLongVal(123448765, val2);
         MultLongVal(val, val, val2);        
-        DumpLongVal(val);
+        DumpLongVal(val, 16);
         DivideLongVal(result, reminder, val, val2);
-        DumpLongVal(result);
+        DumpLongVal(result, 16);
 
         // Add by module
         puts("Add by mod");
@@ -105,7 +172,7 @@ int main(void)
         IntToLongVal(12348, val2);
         IntToLongVal(15, module);
         SubLongValByMod(val, val2, module);
-        DumpLongVal(val);
+        DumpLongVal(val, 16);
         
         // Mult by module
         puts("Mult by mod");
@@ -114,7 +181,7 @@ int main(void)
         IntToLongVal(12348, val2);
         IntToLongVal(15, module);
         MultLongValByMod(val, val2, module);
-        DumpLongVal(val);
+        DumpLongVal(val, 16);
         
         // Divide by module
         puts("Div by mod");
@@ -123,7 +190,7 @@ int main(void)
         IntToLongVal(1234, val2);
         IntToLongVal(155, module);
         DivLongValByMod(result, reminder, val, val2, module);               
-        DumpLongVal(result);  
+        DumpLongVal(result, 16);  
 
         // Divide by module
         puts("Power by mod");
@@ -131,7 +198,7 @@ int main(void)
         IntToLongVal(1234540, val);
         IntToLongVal(155, module);
         LongValToPowerByMod(val, 123, module);               
-        DumpLongVal(val);                
+        DumpLongVal(val, 16);                
 
         return 0;
 }

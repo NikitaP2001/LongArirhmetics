@@ -1,6 +1,5 @@
 LIBRARY longar64
 EXPORTS DllMain
-DumpLongVal
 AddLongVal
 SubLongVal
 AllocLongVal
@@ -10,7 +9,6 @@ XchgLongVal
 MovLongVal
 MultLongVal
 DoubleToLongVal
-BinToLongVal
 DivideLongVal
 CmpEqualLongVal
 LongValToPower
@@ -22,3 +20,7 @@ LongValToPowerByMod
 LongValSquareRoot
 SolveCongruences
 CmpLowerLongVal
+
+BinToLongVal
+LongValToBin
+GetLongValSize
