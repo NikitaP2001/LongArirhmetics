@@ -46,10 +46,7 @@ int DumpLongVal(uint64_t long_val, int base)
         if (size == 0) {
                 puts("Dump error: wrong longval descriptor");       
                 return 0;
-        }        
-        
-        if (sign == 1)
-                putchar('-');
+        }                
         
         if (base == 16) {
                 buf = (char*)malloc(size);
@@ -58,6 +55,9 @@ int DumpLongVal(uint64_t long_val, int base)
                         puts("Inpossible to convert");
                         return 0;
                 }
+                
+                if (sign == 1)
+                        putchar('-');
                 
                 for (int i = 0; i < size; i++) {
                         printf("%02hx", (unsigned char)buf[i]);
@@ -85,10 +85,12 @@ int DumpLongVal(uint64_t long_val, int base)
                 
                 while (!CmpEqualLongVal(lvzero, divident)) {                        
                         DivideLongVal(quotient, reminder, divident, divider);                        
-                        LongValToBin(reminder, &buf[length++], 1);
+                        sign = LongValToBin(reminder, &buf[length++], 1);
                         MovLongVal(divident, quotient);
-                }                
-                               
+                } 
+
+                if (sign == 1)
+                        putchar('-');                                               
                 for (int i = length - 1; i >= 0; i--) {
                         printf("%hhu", (unsigned char)buf[i]);
                 }

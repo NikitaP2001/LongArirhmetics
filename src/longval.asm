@@ -361,6 +361,7 @@ LongValToBin proc source:QWORD, dest:PTR BYTE, dest_size:QWORD
 ;---------------------------------
         push rsi
         push rdi
+        push r10
         sub rsp, 28h
         mov source, rcx
         mov dest, rdx
@@ -368,6 +369,7 @@ LongValToBin proc source:QWORD, dest:PTR BYTE, dest_size:QWORD
         
         call GetLongvalPtr
         
+        mov r10, rax
         mov rbx, dest_size
         test rbx, rbx
         je @Error
@@ -383,7 +385,7 @@ LongValToBin proc source:QWORD, dest:PTR BYTE, dest_size:QWORD
                         
                         dec rbx
                         jne @B
-        mov rax, dest_size        
+        mov rax, (longval ptr[r10]).val_sign        
         jmp @end
 @Error:
         xor rax, rax
@@ -392,6 +394,7 @@ LongValToBin proc source:QWORD, dest:PTR BYTE, dest_size:QWORD
 @end:
 
         add rsp, 28h
+        pop r10
         pop rdi
         pop rsi
         ret
