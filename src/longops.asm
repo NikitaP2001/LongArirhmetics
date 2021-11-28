@@ -752,7 +752,9 @@ UCmpEqualLongVal proc op1:QWORD, op2: QWORD
         
         mov rcx, rbx
         mov rdx, r12                        
-        call USubLongVal       
+        call USubLongVal  
+        test rax, rax
+        je @False
         
         mov rcx, rbx
         call GetLongvalPtr
@@ -805,7 +807,7 @@ CmpEqualLongVal proc op1:QWORD, op2:QWORD
         
         jmp @end
 @False:
-        xor rax, rax
+
 @end:        
         add rsp, 28h
         pop rbx

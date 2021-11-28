@@ -75,8 +75,8 @@ int DumpLongVal(uint64_t long_val, int base)
                 IntToLongVal(10, divider);
                 MovLongVal(divident, long_val);
                 
-                buf = malloc(size*4);
-                memset(buf, 0, size*4);
+                buf = malloc(size*3);
+                memset(buf, 0, size*3);
                 
                 if (CmpEqualLongVal(lvzero, divident))
                         length = 1;
@@ -85,14 +85,19 @@ int DumpLongVal(uint64_t long_val, int base)
                 
                 while (!CmpEqualLongVal(lvzero, divident)) {                        
                         DivideLongVal(quotient, reminder, divident, divider);                        
-                        LongValToBin(reminder, &buf[length++ - 1], 1);
+                        LongValToBin(reminder, &buf[length++], 1);
                         MovLongVal(divident, quotient);
                 }                
                                
                 for (int i = length - 1; i >= 0; i--) {
                         printf("%hhu", (unsigned char)buf[i]);
                 }
-                return 0;
+                
+                FreeLongVal(divident);
+                FreeLongVal(divider);
+                FreeLongVal(quotient);
+                FreeLongVal(reminder);
+                FreeLongVal(lvzero);
         }
         putchar('\n');
         
@@ -137,11 +142,11 @@ int main(void)
         DumpLongVal(result, 10);  
 
         // Power
-        puts("65456 to power 1234");
+        puts("65456 to power 100");
         WaitForConsoleInput();                    
         IntToLongVal(65456, val);
         clock_t t = clock();       
-        LongValToPower(val, 1200);       
+        LongValToPower(val, 100);       
         t = clock() - t;        
                 
         DumpLongVal(val, 16);        
@@ -159,7 +164,7 @@ int main(void)
         puts("Division");
         WaitForConsoleInput();
         DumpLongVal(val, 16);
-        IntToLongVal(123448765, val2);
+        IntToLongVal(-123448765, val2);
         MultLongVal(val, val, val2);        
         DumpLongVal(val, 16);
         DivideLongVal(result, reminder, val, val2);
