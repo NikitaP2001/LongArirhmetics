@@ -135,6 +135,15 @@ int main(void)
                 // FreeLongVal(congr[i*2+1]);               
         // }
         
+        // Add
+        puts("Add");
+        WaitForConsoleInput();
+        IntToLongVal(1234, val);
+        IntToLongVal(54321, val2);
+        IntToLongVal(15, module);
+        AddLongVal(val, val2);
+        DumpLongVal(val, 16);
+        
 
         // Square root
         puts("Square root");

@@ -20,7 +20,6 @@ LongValToPowerByMod
 LongValSquareRoot
 SolveCongruences
 CmpLowerLongVal
-
 BinToLongVal
 LongValToBin
 GetLongValSize

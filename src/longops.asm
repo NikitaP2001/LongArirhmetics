@@ -386,14 +386,18 @@ AddLongVal proc op1:QWORD, op2: QWORD
 	jmp @end
 	
 @@: ;|op2| >= |op1|
-	mov rcx, op2
+        stalloc
+        mov r11, rax
+        mov rcx, rax
+        mov rdx, op2
+        call MovLongVal
+	mov rcx, r11
 	mov rdx, op1
 	call USubLongVal
-	test rax, rax
-	je @Error
 	mov rcx, op1
-	mov rdx, op2
-	call XchgLongVal
+        mov rdx, r11
+        call MovLongVal
+        stfree r11
 	or rax, 1
 	jmp @end
 	
