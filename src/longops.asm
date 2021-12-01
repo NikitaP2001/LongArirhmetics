@@ -811,7 +811,7 @@ CmpEqualLongVal proc op1:QWORD, op2:QWORD
         
         jmp @end
 @False:
-
+        xor rax, rax
 @end:        
         add rsp, 28h
         pop rbx
@@ -1156,6 +1156,7 @@ DivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
         push rdi
         push rsi   
         push r10
+        push r11
         sub rsp, 28h
         mov result, rcx
         mov reminder, rdx
@@ -1195,22 +1196,49 @@ DivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
         mov rdx, r10 
         call MovLongVal
         
+        stalloc
+        mov r11, rax
+        mov rcx, 0
+        mov rdx, r11
+        call IntToLongVal
+        mov rcx, r11
+        mov rdx, result
+        call UCmpEqualLongVal
+        test rax, rax
+        je @else
+        mov rcx, result
+        call GetLongvalPtr
+        mov (longval ptr [rax]).val_sign, 0
+        jmp @endif
+@else:        
         ; store sign in res and reminder
         mov rcx, result
         call GetLongvalPtr
         mov (longval ptr [rax]).val_sign, rsi
-        
+@endif:   
+        mov rcx, r11
+        mov rdx, reminder
+        call UCmpEqualLongVal
+        test rax, rax
+        je @else1
+        mov rcx, reminder
+        call GetLongvalPtr
+        mov (longval ptr [rax]).val_sign, 0
+        jmp @endif1     
+@else1:       
         mov rcx, reminder
         call GetLongvalPtr
         mov (longval ptr [rax]).val_sign, rsi
-        
+@endif1:        
         or rax, 1
         jmp @end
 @Error:        
         xor rax, rax
 @end:        
         stfree r10
+        stfree r11
         add rsp, 28h
+        pop r11
         pop r10
         pop rsi
         pop rdi
