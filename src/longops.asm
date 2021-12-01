@@ -1224,6 +1224,7 @@ UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
         push r11
         push r12
         push r13
+        push r14
         sub rsp, 28h
         mov result, rcx
         mov reminder, rdx
@@ -1377,6 +1378,7 @@ UDivideLongVal proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD
     
 @end:        
         add rsp, 28h
+        pop r14
         pop r13
         pop r12
         pop r11
