@@ -36,10 +36,10 @@ int DumpLongVal(uint64_t long_val, int base)
 {
         char *buf;
         int sign, size;
-        if (base != 10 && base != 16) {
-                puts("Wrong base: can be 16 or 10 inly");
-                return 0;
-        }
+        // if (base != 10 && base != 16) {
+                // puts("Wrong base: can be 16 or 10 inly");
+                // return 0;
+        // }
         
         size = GetLongValSize(long_val);
         
@@ -135,6 +135,30 @@ int main(void)
                 // FreeLongVal(congr[i*2+1]);               
         // }
         
+        // Divide
+        puts("Division");
+        WaitForConsoleInput();
+        IntToLongVal(0x2B, val);
+        IntToLongVal(2, val2);        
+        DivideLongVal(result, reminder, val, val2);
+        DumpLongVal(result, 10);
+        
+        // Square root
+        puts("Square root");
+        WaitForConsoleInput();
+        IntToLongVal(0x2B, val);
+        LongValSquareRoot(result, val);               
+        DumpLongVal(result, 10); 
+        
+        // Divide
+        puts("Division");
+        WaitForConsoleInput();
+        DumpLongVal(val, 0x2B);
+        IntToLongVal(2, val2);        
+        DivideLongVal(result, reminder, val, val2);
+        DumpLongVal(result, 16);
+        
+        
         // Add
         puts("Add");
         WaitForConsoleInput();
@@ -142,15 +166,7 @@ int main(void)
         IntToLongVal(54321, val2);
         IntToLongVal(15, module);
         AddLongVal(val, val2);
-        DumpLongVal(val, 16);
-        
-
-        // Square root
-        puts("Square root");
-        WaitForConsoleInput();
-        IntToLongVal(123456, val);
-        LongValSquareRoot(result, val);               
-        DumpLongVal(result, 10);  
+        DumpLongVal(val, 16);       
 
         // Power
         puts("65456 to power 100");
@@ -169,17 +185,7 @@ int main(void)
         
         // if (CmpEqualLongVal(val, val2))
                 // puts("Equal");
-        // else puts("Not equal");
-        
-        // Divide
-        puts("Division");
-        WaitForConsoleInput();
-        DumpLongVal(val, 16);
-        IntToLongVal(-123448765, val2);
-        MultLongVal(val, val, val2);        
-        DumpLongVal(val, 16);
-        DivideLongVal(result, reminder, val, val2);
-        DumpLongVal(result, 16);
+        // else puts("Not equal");                
 
         // Add by module
         puts("Add by mod");

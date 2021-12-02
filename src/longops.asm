@@ -506,6 +506,7 @@ DivLongValByMod proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD, opmod:Q
         push rsi
         push rdi
         push rbx
+        push r10
         sub rsp, 28h        
         
         mov rdi, rcx
@@ -532,6 +533,7 @@ DivLongValByMod proc result:QWORD, reminder:QWORD, op1:QWORD, op2:QWORD, opmod:Q
         stfree r10
 @Error:        
         add rsp, 28h
+        push r10
         pop rbx
         pop rdi
         pop rsi
@@ -542,6 +544,7 @@ LongValToPowerByMod proc desc:QWORD, power:QWORD, module:QWORD
         push rbx
         push rdi
         push r10
+        push r11
         sub rsp, 28h
 
         mov rdi, rcx
@@ -551,17 +554,24 @@ LongValToPowerByMod proc desc:QWORD, power:QWORD, module:QWORD
         
         stalloc 
         mov r10, rax
+        stalloc
+        mov r11, rax
         
         mov rcx, r10
-        mov rdx, rdi
+        mov rdx, r11
         mov r8, rdi
         mov r9, rbx
         call DivideLongVal
+        mov rcx, rdi
+        mov rdx, r11
+        call MovLongVal
         
         stfree r10
+        stfree r11
 @Error:       
         
         add rsp, 28h
+        pop r11
         pop r10
         pop rdi
         pop rbx
@@ -1634,12 +1644,11 @@ lvdivisor       EQU qword ptr[rbp-30h]
         mov rcx, r10
         mov rdx, lvfloor
         call UAddLongVal     
-
         mov rcx, lvquotient
         mov rdx, lvreminder
         mov r8, r10
         mov r9, lvdivisor
-        call DivLongValByMod                    
+        call DivideLongVal                    
         
         mov rcx, r10
         mov rdx, lvquotient
